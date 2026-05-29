@@ -1,18 +1,17 @@
-'use client'
+"use client";
 
-import { useGame } from '@/hooks/useGame'
-import { WelcomeScreen } from './WelcomeScreen'
-import { PhaseIntro } from './PhaseIntro'
-import { GameScreen } from './GameScreen'
-import { PhaseResult } from './PhaseResult'
-import { FinalResult } from './FinalResult'
+import { useGame } from "@/hooks/useGame";
+import { WelcomeScreen } from "./WelcomeScreen";
+import { PhaseIntro } from "./PhaseIntro";
+import { GameScreen } from "./GameScreen";
+import { PhaseResult } from "./PhaseResult";
+import { FinalResult } from "./FinalResult";
 
 export function GameWrapper() {
   const {
     state,
     phases,
-    loading,
-    error,
+
     currentPhase,
     currentScenario,
     globalProgress,
@@ -23,30 +22,7 @@ export function GameWrapper() {
     nextPhase,
     restart,
     submitScore,
-  } = useGame()
-
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-amber-500 border-t-transparent mx-auto" />
-          <p className="text-white/50">Carregando o jogo...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="flex min-h-screen items-center justify-center px-5 text-center">
-        <div>
-          <p className="mb-2 text-xl font-black text-red-400">Erro ao carregar</p>
-          <p className="mb-4 text-sm text-white/50">{error}</p>
-          <p className="text-xs text-white/30">Verifique se o servidor FastAPI está rodando em localhost:8000</p>
-        </div>
-      </div>
-    )
-  }
+  } = useGame();
 
   return (
     <>
@@ -71,15 +47,13 @@ export function GameWrapper() {
         }
       `}</style>
 
-      {state.screen === 'welcome' && (
-        <WelcomeScreen onStart={startGame} />
-      )}
+      {state.screen === "welcome" && <WelcomeScreen onStart={startGame} />}
 
-      {state.screen === 'phase-intro' && currentPhase && (
+      {state.screen === "phase-intro" && currentPhase && (
         <PhaseIntro phase={currentPhase} onStart={() => nextScenario()} />
       )}
 
-      {state.screen === 'game' && currentPhase && currentScenario && (
+      {state.screen === "game" && currentPhase && currentScenario && (
         <GameScreen
           state={state}
           phase={currentPhase}
@@ -90,7 +64,7 @@ export function GameWrapper() {
         />
       )}
 
-      {state.screen === 'phase-result' && currentPhase && (
+      {state.screen === "phase-result" && currentPhase && (
         <PhaseResult
           phase={currentPhase}
           state={state}
@@ -99,7 +73,7 @@ export function GameWrapper() {
         />
       )}
 
-      {state.screen === 'final' && (
+      {state.screen === "final" && (
         <FinalResult
           state={state}
           phases={phases}
@@ -109,5 +83,5 @@ export function GameWrapper() {
         />
       )}
     </>
-  )
+  );
 }
