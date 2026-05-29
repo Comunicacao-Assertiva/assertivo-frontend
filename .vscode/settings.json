@@ -1,0 +1,19 @@
+{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.tabSize": 2,
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.tabSize": 4
+  },
+  "python.defaultInterpreterPath": "${workspaceFolder}/backend/venv/bin/python",
+  "tailwindCSS.experimental.classRegex": [
+    ["clsx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
+  ],
+  "typescript.preferences.importModuleSpecifier": "non-relative",
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/.next": true,
+    "**/node_modules": true
+  }
+}
