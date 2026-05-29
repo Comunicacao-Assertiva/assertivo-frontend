@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
 interface WelcomeScreenProps {
-  onStart: () => void
+  onStart: () => void;
 }
 
 export function WelcomeScreen({ onStart }: WelcomeScreenProps) {
@@ -29,17 +29,19 @@ export function WelcomeScreen({ onStart }: WelcomeScreenProps) {
       {/* Stats */}
       <div className="mb-8 grid w-full max-w-sm grid-cols-4 gap-2.5">
         {[
-          { n: '5', l: 'Fases' },
-          { n: '15', l: 'Cenários' },
-          { n: '♥♥♥', l: 'Vidas' },
-          { n: '1500', l: 'Pts máx.' },
+          { n: "5", l: "Fases" },
+          { n: "15", l: "Cenários" },
+          { n: "♥♥♥", l: "Vidas" },
+          { n: "10.000", l: "Pts máx." },
         ].map(({ n, l }) => (
           <div
             key={l}
             className="rounded-xl border border-white/10 bg-white/5 py-3 text-center"
           >
             <div className="text-xl font-black text-amber-400">{n}</div>
-            <div className="mt-0.5 text-[10px] font-bold uppercase tracking-wide text-white/40">{l}</div>
+            <div className="mt-0.5 text-[10px] font-bold uppercase tracking-wide text-white/40">
+              {l}
+            </div>
           </div>
         ))}
       </div>
@@ -47,7 +49,8 @@ export function WelcomeScreen({ onStart }: WelcomeScreenProps) {
       {/* Verse */}
       <div className="mb-8 max-w-sm rounded-r-xl border-l-[3px] border-amber-500 bg-amber-500/10 px-4 py-3 text-left">
         <p className="mb-1 text-sm italic text-white/75">
-          "Antes, seguindo a verdade em amor, cresçamos em tudo naquele que é a cabeça, Cristo."
+          "Antes, seguindo a verdade em amor, cresçamos em tudo naquele que é a
+          cabeça, Cristo."
         </p>
         <span className="text-xs font-bold text-amber-500">Efésios 4:15</span>
       </div>
@@ -59,5 +62,5 @@ export function WelcomeScreen({ onStart }: WelcomeScreenProps) {
         ▶ Jogar Agora
       </button>
     </div>
-  )
+  );
 }

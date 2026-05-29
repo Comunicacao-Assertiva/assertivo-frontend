@@ -50,7 +50,7 @@ export function GameWrapper() {
       {state.screen === "welcome" && <WelcomeScreen onStart={startGame} />}
 
       {state.screen === "phase-intro" && currentPhase && (
-        <PhaseIntro phase={currentPhase} onStart={() => nextScenario()} />
+        <PhaseIntro phase={currentPhase} onStart={() => startGame()} />
       )}
 
       {state.screen === "game" && currentPhase && currentScenario && (
