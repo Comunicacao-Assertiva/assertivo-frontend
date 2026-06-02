@@ -1,13 +1,14 @@
 "use client";
-import { useReducer, useCallback } from "react";
+import { useReducer, useCallback, useEffect } from "react";
 import type { GameState, Choice, Screen } from "@/types/game";
 import { PHASES_DATA } from "@/data/phases";
-import { saveScore } from "@/lib/supabase";
+import { saveScore, getClassification } from "@/lib/supabase";
 
 const N = PHASES_DATA.length;
 
 const makeInitial = (): GameState => ({
   screen: "welcome",
+  playerName: "",
   phase: 0,
   scenario: 0,
   score: 0,
@@ -23,6 +24,7 @@ const makeInitial = (): GameState => ({
 
 type Action =
   | { type: "SET_SCREEN"; screen: Screen }
+  | { type: "SET_NAME"; name: string }
   | { type: "SELECT_CHOICE"; choice: Choice }
   | { type: "NEXT_SCENARIO" }
   | { type: "NEXT_PHASE" }
@@ -32,7 +34,8 @@ function reducer(state: GameState, action: Action): GameState {
   switch (action.type) {
     case "SET_SCREEN":
       return { ...state, screen: action.screen };
-
+    case "SET_NAME":
+      return { ...state, playerName: action.name };
     case "SELECT_CHOICE": {
       if (state.answered) return state;
       const { choice } = action;
@@ -56,7 +59,6 @@ function reducer(state: GameState, action: Action): GameState {
         ),
       };
     }
-
     case "NEXT_SCENARIO": {
       const next = state.scenario + 1;
       if (next >= 3) return { ...state, screen: "phase-result" };
@@ -67,7 +69,6 @@ function reducer(state: GameState, action: Action): GameState {
         selectedChoice: null,
       };
     }
-
     case "NEXT_PHASE": {
       const next = state.phase + 1;
       if (next >= N) return { ...state, screen: "final" };
@@ -80,10 +81,8 @@ function reducer(state: GameState, action: Action): GameState {
         screen: "phase-intro",
       };
     }
-
     case "RESTART":
       return makeInitial();
-
     default:
       return state;
   }
@@ -98,7 +97,7 @@ export function useGame() {
   const globalProgress = state.phase * 3 + state.scenario;
   const maxScore = N * 300;
 
-  const getClassification = useCallback(
+  const getClass = useCallback(
     (score: number) => {
       const pct = score / maxScore;
       if (pct >= 0.93) return { title: "Mestre da Comunicação", trophy: "🏆" };
@@ -110,15 +109,19 @@ export function useGame() {
     [maxScore],
   );
 
-  // ✅ CORREÇÃO: goToGame muda a tela para 'game' ao sair do phase-intro
+  const startGame = useCallback((name: string) => {
+    dispatch({ type: "RESTART" });
+    dispatch({ type: "SET_NAME", name });
+    dispatch({ type: "SET_SCREEN", screen: "phase-intro" });
+  }, []);
   const goToGame = useCallback(
     () => dispatch({ type: "SET_SCREEN", screen: "game" }),
     [],
   );
-  const startGame = useCallback(() => {
-    dispatch({ type: "RESTART" });
-    dispatch({ type: "SET_SCREEN", screen: "phase-intro" });
-  }, []);
+  const goToLeaderboard = useCallback(
+    () => dispatch({ type: "SET_SCREEN", screen: "leaderboard" }),
+    [],
+  );
   const selectChoice = useCallback(
     (c: Choice) => dispatch({ type: "SELECT_CHOICE", choice: c }),
     [],
@@ -130,19 +133,19 @@ export function useGame() {
   const nextPhase = useCallback(() => dispatch({ type: "NEXT_PHASE" }), []);
   const restart = useCallback(() => dispatch({ type: "RESTART" }), []);
 
-  const submitScore = useCallback(
-    async (playerName?: string) => {
-      return await saveScore({
-        player_name: playerName,
+  const submitScore = useCallback(async () => {
+    return await saveScore(
+      {
+        player_name: state.playerName,
         total_score: state.score,
         phase_scores: state.phaseScores,
         correct_count: state.correct,
         partial_count: state.partial,
         wrong_count: state.wrong,
-      });
-    },
-    [state],
-  );
+      },
+      maxScore,
+    );
+  }, [state, maxScore]);
 
   return {
     state,
@@ -151,9 +154,10 @@ export function useGame() {
     currentScenario,
     globalProgress,
     maxScore,
-    finalClassification: getClassification(state.score),
+    finalClassification: getClass(state.score),
     startGame,
     goToGame,
+    goToLeaderboard,
     selectChoice,
     nextScenario,
     nextPhase,
