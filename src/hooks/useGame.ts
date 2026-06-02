@@ -1,6 +1,6 @@
 "use client";
-import { useReducer, useCallback, useEffect } from "react";
-import type { GameState, Choice, Screen } from "@/types/game";
+import { useReducer, useCallback } from "react";
+import type { GameState, Screen } from "@/types/game";
 import { PHASES_DATA } from "@/data/phases";
 import { saveScore, getClassification } from "@/lib/supabase";
 
@@ -12,9 +12,8 @@ const makeInitial = (): GameState => ({
   phase: 0,
   scenario: 0,
   score: 0,
-  lives: 3,
   answered: false,
-  selectedChoice: null,
+  scenarioScore: null,
   phaseScores: Array(N).fill(0),
   correct: 0,
   partial: 0,
@@ -25,7 +24,7 @@ const makeInitial = (): GameState => ({
 type Action =
   | { type: "SET_SCREEN"; screen: Screen }
   | { type: "SET_NAME"; name: string }
-  | { type: "SELECT_CHOICE"; choice: Choice }
+  | { type: "SCORE_SCENARIO"; pts: number }
   | { type: "NEXT_SCENARIO" }
   | { type: "NEXT_PHASE" }
   | { type: "RESTART" };
@@ -36,39 +35,33 @@ function reducer(state: GameState, action: Action): GameState {
       return { ...state, screen: action.screen };
     case "SET_NAME":
       return { ...state, playerName: action.name };
-    case "SELECT_CHOICE": {
-      if (state.answered) return state;
-      const { choice } = action;
+
+    case "SCORE_SCENARIO": {
+      const pts = action.pts;
       const newPhaseScores = [...state.phaseScores];
-      newPhaseScores[state.phase] += choice.points;
+      newPhaseScores[state.phase] += pts;
+      const newBreakdown = state.phaseBreakdown.map((d, i) =>
+        i === state.phase ? [...d, { pts }] : d,
+      );
       return {
         ...state,
         answered: true,
-        selectedChoice: choice,
-        score: state.score + choice.points,
+        scenarioScore: pts,
+        score: state.score + pts,
         phaseScores: newPhaseScores,
-        lives:
-          choice.type === "wrong" ? Math.max(0, state.lives - 1) : state.lives,
-        correct: choice.type === "correct" ? state.correct + 1 : state.correct,
-        partial: choice.type === "partial" ? state.partial + 1 : state.partial,
-        wrong: choice.type === "wrong" ? state.wrong + 1 : state.wrong,
-        phaseBreakdown: state.phaseBreakdown.map((d, i) =>
-          i === state.phase
-            ? [...d, { pts: choice.points, type: choice.type }]
-            : d,
-        ),
+        correct: pts === 100 ? state.correct + 1 : state.correct,
+        partial: pts > 0 && pts < 100 ? state.partial + 1 : state.partial,
+        wrong: pts === 0 ? state.wrong + 1 : state.wrong,
+        phaseBreakdown: newBreakdown,
       };
     }
+
     case "NEXT_SCENARIO": {
       const next = state.scenario + 1;
       if (next >= 3) return { ...state, screen: "phase-result" };
-      return {
-        ...state,
-        scenario: next,
-        answered: false,
-        selectedChoice: null,
-      };
+      return { ...state, scenario: next, answered: false, scenarioScore: null };
     }
+
     case "NEXT_PHASE": {
       const next = state.phase + 1;
       if (next >= N) return { ...state, screen: "final" };
@@ -77,10 +70,11 @@ function reducer(state: GameState, action: Action): GameState {
         phase: next,
         scenario: 0,
         answered: false,
-        selectedChoice: null,
+        scenarioScore: null,
         screen: "phase-intro",
       };
     }
+
     case "RESTART":
       return makeInitial();
     default:
@@ -118,12 +112,8 @@ export function useGame() {
     () => dispatch({ type: "SET_SCREEN", screen: "game" }),
     [],
   );
-  const goToLeaderboard = useCallback(
-    () => dispatch({ type: "SET_SCREEN", screen: "leaderboard" }),
-    [],
-  );
-  const selectChoice = useCallback(
-    (c: Choice) => dispatch({ type: "SELECT_CHOICE", choice: c }),
+  const scoreScenario = useCallback(
+    (pts: number) => dispatch({ type: "SCORE_SCENARIO", pts }),
     [],
   );
   const nextScenario = useCallback(
@@ -157,8 +147,7 @@ export function useGame() {
     finalClassification: getClass(state.score),
     startGame,
     goToGame,
-    goToLeaderboard,
-    selectChoice,
+    scoreScenario,
     nextScenario,
     nextPhase,
     restart,

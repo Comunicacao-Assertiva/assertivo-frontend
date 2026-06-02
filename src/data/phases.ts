@@ -5,103 +5,112 @@ export const PHASES_DATA: Phase[] = [
     id: 1,
     number: 1,
     title: "Expressão e Clareza",
-    description:
-      "Comunicar-se com clareza, objetividade e respeito é o primeiro passo para uma comunicação assertiva.",
-    tip: "💡 Assertividade não é ser agressivo nem passivo — é ser <strong>claro e respeitoso ao mesmo tempo.</strong>",
+    description: "Fase inicial — cenários diretos para calibrar o radar.",
+    tip: "💡 Nível 1. Assertividade é <strong>falar o que precisa ser dito, com respeito</strong> — nem silêncio, nem agressão.",
     scenarios: [
       {
         id: "1-1",
-        tag: "📋 Reunião de Equipe",
+        type: "choice",
+        tag: "📋 Limite Profissional",
         question:
-          "Seu líder mudou o horário de uma reunião importante e pediu para você avisar a equipe. Qual mensagem você envia no grupo?",
+          "Um colega pede sua ajuda constantemente com tarefas que são responsabilidade dele. Você está sobrecarregado. O que você faz?",
         choices: [
           {
-            id: "1-1-a",
-            text: '"Gente, mudou o horário. Apareçam quando puderem."',
-            points: 25,
-            type: "partial",
-            feedback:
-              "Razoável, mas falta clareza: qual o novo horário? Por quê mudou? Mensagens vagas geram confusão.",
-          },
-          {
-            id: "1-1-b",
-            text: '"Equipe! A reunião de hoje foi alterada para 15h (era 14h). Motivo: compromisso externo do gestor. Confirmem presença!"',
-            points: 100,
-            type: "correct",
-            feedback:
-              "Assertivo! Você foi claro sobre o que mudou, por quê e pediu confirmação. Exatamente o que a equipe precisava.",
-          },
-          {
-            id: "1-1-c",
-            text: '"Não sei se alguém viu, mas acho que mudou alguma coisa no horário..."',
+            id: "a",
+            text: "Continua ajudando sem dizer nada para não criar mal-estar.",
             points: 0,
             type: "wrong",
             feedback:
-              "Gera mais insegurança do que clareza. Comunicação assertiva transmite certeza, não dúvida.",
+              "Silêncio aqui não é generosidade — é passividade que prejudica você e não ajuda o colega a crescer.",
+          },
+          {
+            id: "b",
+            text: "Fala claramente que não pode continuar ajudando com essas tarefas e explica o motivo.",
+            points: 100,
+            type: "correct",
+            feedback:
+              "Direto e respeitoso. Você comunicou seu limite sem atacar — isso é assertividade básica.",
+          },
+          {
+            id: "c",
+            text: "Reclama do colega para outros, mas nunca fala com ele diretamente.",
+            points: 0,
+            type: "wrong",
+            feedback:
+              "Falar dos outros pelas costas em vez de falar diretamente é triangulação — não resolve nada.",
           },
         ],
       },
       {
         id: "1-2",
-        tag: "🕐 Colega Atrasado",
+        type: "choice",
+        tag: "🗣️ Discordância na Reunião",
         question:
-          "Um colega de equipe chega sempre atrasado nas reuniões, atrapalhando o andamento. Como você aborda a situação?",
+          "Numa reunião, seu gestor propõe uma abordagem que você acredita que não vai funcionar. Como você age?",
         choices: [
           {
-            id: "1-2-a",
-            text: '"Você é sempre o último! Isso atrasa todo mundo e é falta de respeito!"',
-            points: 0,
-            type: "wrong",
-            feedback:
-              "Agressivo e generalizante. Atacar a pessoa em vez do comportamento prejudica o relacionamento.",
-          },
-          {
-            id: "1-2-b",
-            text: "Você não fala nada para não criar clima ruim.",
+            id: "a",
+            text: "Fica quieto — não é seu lugar questionar o gestor na frente de todos.",
             points: 25,
             type: "partial",
             feedback:
-              "Evitar o conflito pode parecer paz, mas o problema continua. Assertividade exige coragem gentil.",
+              "Às vezes o timing importa, mas calar uma perspectiva útil por hierarquia é perda para todos.",
           },
           {
-            id: "1-2-c",
-            text: '"Percebi que você tem chegado depois do início. Tem algo acontecendo? Quero entender se posso ajudar."',
+            id: "b",
+            text: "Diz que a ideia é ruim na frente de todos, sem explicar o porquê.",
+            points: 0,
+            type: "wrong",
+            feedback:
+              "Discordância sem argumento soa como sabotagem, não como contribuição.",
+          },
+          {
+            id: "c",
+            text: 'Pede a palavra: "Tenho uma preocupação sobre esse ponto — posso compartilhar?"',
             points: 100,
             type: "correct",
             feedback:
-              "Excelente! Você descreveu o comportamento sem julgar, abriu espaço para escuta e ofereceu ajuda.",
+              "Isso é assertividade saudável. Você contribuiu, pediu espaço e trouxe sua perspectiva com respeito.",
           },
         ],
       },
       {
         id: "1-3",
-        tag: "🎤 Apresentação",
+        type: "spot",
+        tag: "💬 Thread da Equipe",
+        context:
+          "Conversa no grupo da equipe sobre um prazo que vai ser perdido.",
         question:
-          "Você precisa apresentar um projeto para toda a empresa. O nervosismo bate forte. O que você faz?",
-        choices: [
+          "Identifique a mensagem que quebra a comunicação assertiva da equipe.",
+        messages: [
           {
-            id: "1-3-a",
-            text: "Fala tão rápido e nervoso que mistura as informações — ninguém entende direito.",
-            points: 0,
-            type: "wrong",
-            feedback:
-              "A ansiedade atropelou a mensagem. Comunicação assertiva exige preparação antes de falar.",
+            id: "m1",
+            author: "Carla",
+            text: "Pessoal, o prazo do projeto X está apertado. Precisamos ver o que podemos antecipar.",
+            isTarget: false,
+            explanation: "Mensagem clara e focada no problema — assertiva.",
           },
           {
-            id: "1-3-b",
-            text: "Pede para um colega apresentar por você, sem nem tentar.",
-            points: 25,
-            type: "partial",
-            feedback:
-              "Às vezes pedir ajuda é prudente, mas evitar sistematicamente dificulta o desenvolvimento.",
+            id: "m2",
+            author: "Bruno",
+            text: "Concordo. Posso adiantar minha parte até quinta se precisar.",
+            isTarget: false,
+            explanation: "Resposta colaborativa e objetiva — assertiva.",
           },
           {
-            id: "1-3-c",
-            text: "Respira fundo, organiza a fala em 3 pontos principais e faz contato visual com a audiência.",
-            points: 100,
-            type: "correct",
-            feedback:
-              "Perfeito! Preparação + calma + contato visual = comunicação assertiva e eficaz.",
+            id: "m3",
+            author: "Diego",
+            text: "O problema é o André, que nunca entrega no prazo. Todo mundo já sabe disso.",
+            isTarget: true,
+            explanation:
+              'Ataca uma pessoa publicamente usando "nunca" — generalizante e agressivo. Foca no indivíduo, não no problema.',
+          },
+          {
+            id: "m4",
+            author: "Ana",
+            text: "Vou verificar minha agenda e atualizo o grupo ainda hoje.",
+            isTarget: false,
+            explanation: "Clara e comprometida — assertiva.",
           },
         ],
       },
@@ -110,104 +119,117 @@ export const PHASES_DATA: Phase[] = [
   {
     id: 2,
     number: 2,
-    title: "Escuta Ativa e Empatia",
+    title: "Escuta Ativa",
     description:
-      "Ouvir de verdade — sem interromper, sem julgamentos — é tão importante quanto saber falar.",
-    tip: "💡 Regra de ouro: <strong>ouça para entender, não para responder.</strong>",
+      "Ouvir de verdade vai além do silêncio. Uma opção errada começa a parecer gentil.",
+    tip: "💡 Nível 2. <strong>Escuta ativa é presença total</strong> — não é esperar sua vez de falar.",
     scenarios: [
       {
         id: "2-1",
-        tag: "💔 Amigo em Dificuldade",
+        type: "choice",
+        tag: "💬 Desabafo",
         question:
-          "Um amigo próximo começa a desabafar sobre um problema sério que está vivendo. O que você faz?",
+          "Um amigo está desabafando sobre um problema. No meio da conversa, você percebe que ele está cometendo um erro de julgamento. O que você faz?",
         choices: [
           {
-            id: "2-1-a",
-            text: 'Ouve alguns segundos e logo dá conselhos rápidos: "Calma, vai passar! Faz assim..."',
-            points: 25,
-            type: "partial",
-            feedback:
-              "A intenção é boa, mas conselhos prematuros interrompem o processo de a pessoa se sentir ouvida.",
-          },
-          {
-            id: "2-1-b",
-            text: "Interrompe para contar uma situação parecida que você viveu.",
+            id: "a",
+            text: "Interrompe assim que percebe o erro para ajudá-lo a corrigir logo.",
             points: 0,
             type: "wrong",
             feedback:
-              "Redirecionar a conversa para si mesmo invalida a experiência do outro.",
+              "Interromper sinaliza que você está mais interessado em resolver do que em ouvir. Ele precisa ser ouvido primeiro.",
           },
           {
-            id: "2-1-c",
-            text: "Ouve até o fim sem interromper, faz uma pergunta empática e só então oferece apoio.",
+            id: "b",
+            text: 'Ouve até o fim e depois pergunta: "Tem um ponto que queria entender melhor — posso compartilhar uma perspectiva diferente?"',
             points: 100,
             type: "correct",
             feedback:
-              "Isso é escuta ativa! A sensação de ser verdadeiramente ouvido é o que seu amigo mais precisava.",
+              "Você ouviu completamente, pediu permissão e só então ofereceu sua visão. Escuta ativa com respeito.",
+          },
+          {
+            id: "c",
+            text: "Ouve tudo e não fala nada sobre o erro para não desanimá-lo.",
+            points: 25,
+            type: "partial",
+            feedback:
+              "Parece gentil, mas omitir informação útil por medo de desanimar não é cuidado real.",
           },
         ],
       },
       {
         id: "2-2",
-        tag: "💡 Ideia do Colega",
-        question:
-          "Um colega mais novo apresenta uma ideia em reunião. Você discorda, mas ele ainda está falando. O que você faz?",
-        choices: [
+        type: "spot",
+        tag: "📧 Thread de E-mail",
+        context:
+          "Troca de e-mails sobre um projeto com atraso entre três colegas.",
+        question: "Identifique o e-mail que usa comunicação não assertiva.",
+        messages: [
           {
-            id: "2-2-a",
-            text: "Interrompe no meio da fala para dizer que a ideia não vai funcionar.",
-            points: 0,
-            type: "wrong",
-            feedback:
-              "Interromper invalida o outro e cria um ambiente onde as pessoas têm medo de falar.",
+            id: "m1",
+            author: "Fernanda",
+            text: "Olá, o cliente pediu uma atualização do projeto. Vocês conseguem me passar o status hoje?",
+            isTarget: false,
+            explanation: "Pedido claro e direto — assertivo.",
           },
           {
-            id: "2-2-b",
-            text: "Ouve até o fim, mas não comenta nada para evitar conflito.",
-            points: 25,
-            type: "partial",
-            feedback:
-              "Ouvir até o fim é ótimo, mas omitir sua perspectiva também é passividade.",
+            id: "m2",
+            author: "Lucas",
+            text: "Estou com 80% concluído. Só falta a parte de revisão, que entrego amanhã.",
+            isTarget: false,
+            explanation: "Resposta clara, com prazo — assertiva.",
           },
           {
-            id: "2-2-c",
-            text: 'Ouve até o fim, reconhece o esforço e pergunta: "Interessante. Como você pensou em resolver X?"',
-            points: 100,
-            type: "correct",
-            feedback:
-              "Brilhante! Você ouviu, reconheceu e fez uma pergunta construtiva. Isso cria um ambiente seguro.",
+            id: "m3",
+            author: "Patrícia",
+            text: "Já seria a terceira vez que você atrasa essa entrega, Lucas. Isso é uma falta de comprometimento sério.",
+            isTarget: true,
+            explanation:
+              'Generaliza com "terceira vez", ataca o comprometimento da pessoa em vez do comportamento específico — não assertivo.',
+          },
+          {
+            id: "m4",
+            author: "Lucas",
+            text: "Entendo a urgência. Posso adiantar para hoje à tarde se necessário.",
+            isTarget: false,
+            explanation: "Resposta proativa e focada na solução — assertiva.",
           },
         ],
       },
       {
         id: "2-3",
-        tag: "🤔 Opinião Diferente",
-        question:
-          "Numa conversa em grupo, alguém defende uma posição com a qual você discorda. Todos estão ouvindo. Como você reage?",
-        choices: [
+        type: "sort",
+        tag: "📊 Pedido Extra",
+        situation:
+          "Seu gestor te pede mais uma tarefa urgente quando você já está sobrecarregado.",
+        question: "Ordene as respostas da PIOR para a MELHOR:",
+        items: [
           {
-            id: "2-3-a",
-            text: '"Isso está completamente errado. Você não entende nada sobre o assunto."',
-            points: 0,
-            type: "wrong",
-            feedback:
-              "A forma importa tanto quanto o conteúdo. Atacar gera defensividade e fecha o diálogo.",
+            id: "s1",
+            text: "Aceita na hora sem questionar para não decepcionar.",
+            rank: 2,
+            explanation:
+              "Parece profissional, mas gera expectativas que você não vai cumprir.",
           },
           {
-            id: "2-3-b",
-            text: "Concorda com tudo para não criar tensão, mesmo sem acreditar.",
-            points: 25,
-            type: "partial",
-            feedback:
-              "A concordância falsa não resolve nada e impede um diálogo genuíno.",
+            id: "s2",
+            text: "Diz que não pode e explica toda sua carga atual para o grupo.",
+            rank: 3,
+            explanation:
+              "Honesto, mas expor sua carga publicamente pode ser inadequado.",
           },
           {
-            id: "2-3-c",
-            text: '"Entendo seu ponto. Tenho uma perspectiva diferente — posso compartilhar?"',
-            points: 100,
-            type: "correct",
-            feedback:
-              "Excelente! Você validou a contribuição antes de apresentar a sua. Isso é dialogar com respeito.",
+            id: "s3",
+            text: "Aceita e some depois sem entregar nem dar satisfação.",
+            rank: 1,
+            explanation: "Pior opção: destrói confiança e não resolve.",
+          },
+          {
+            id: "s4",
+            text: '"Posso conversar depois da reunião? Quero entender o escopo e ver como encaixo nas prioridades."',
+            rank: 4,
+            explanation:
+              "Não cede, não recusa publicamente, cria espaço certo para conversa real.",
           },
         ],
       },
@@ -216,104 +238,119 @@ export const PHASES_DATA: Phase[] = [
   {
     id: 3,
     number: 3,
-    title: "Postura Assertiva",
-    description:
-      "Saber dizer não, reconhecer erros e receber críticas com maturidade são marcas de uma comunicação saudável.",
-    tip: "💡 Assertividade é <strong>equilíbrio entre firmeza e gentileza.</strong> Você pode ser direto sem ser duro.",
+    title: "Postura sob Pressão",
+    description: "Duas respostas começam a parecer certas. Leia com atenção.",
+    tip: "💡 Nível 3. <strong>Assertividade é manter sua posição por razões, não por pressão.</strong>",
     scenarios: [
       {
         id: "3-1",
-        tag: "🙅 Dizer Não",
-        question:
-          "Seu gestor pediu que você assumisse mais uma tarefa urgente, mas sua agenda já está no limite. O que você faz?",
-        choices: [
+        type: "sort",
+        tag: "📊 Resposta à Crítica Pública",
+        situation:
+          "Seu gestor te critica na frente da equipe de forma que você considera injusta.",
+        question: "Ordene as reações da PIOR para a MELHOR:",
+        items: [
           {
-            id: "3-1-a",
-            text: "Aceita sem questionar, mesmo sabendo que não vai conseguir entregar bem.",
-            points: 25,
-            type: "partial",
-            feedback:
-              "Aceitar para não desapontar cria expectativas que não serão cumpridas. Um não honesto prejudica menos.",
+            id: "s1",
+            text: "Revida na hora com o mesmo tom na frente de todos.",
+            rank: 1,
+            explanation:
+              "Escala o conflito publicamente e prejudica sua imagem.",
           },
           {
-            id: "3-1-b",
-            text: '"Claro, pode deixar." E depois some sem dar retorno.',
-            points: 0,
-            type: "wrong",
-            feedback:
-              "Pior das opções: gera frustração e destrói a confiança. Sempre é melhor um não claro.",
+            id: "s2",
+            text: "Fica quieto e ignora — não vale a energia.",
+            rank: 2,
+            explanation: "A crítica fica sem resposta e o padrão se repete.",
           },
           {
-            id: "3-1-c",
-            text: '"Quero ajudar, mas minha agenda está cheia essa semana. Posso pegar isso na próxima, ou você quer que eu priorize isso e adie outra tarefa?"',
-            points: 100,
-            type: "correct",
-            feedback:
-              "Impecável! Honesto, com boa vontade e alternativa concreta. Isso é assertividade com responsabilidade.",
+            id: "s3",
+            text: "Fica quieto na hora, mas depois reclama para colegas.",
+            rank: 3,
+            explanation:
+              "Processa a emoção mas usa triangulação em vez de diálogo direto.",
+          },
+          {
+            id: "s4",
+            text: 'Mantém a calma e pede uma conversa privada depois: "Quero entender melhor o que aconteceu."',
+            rank: 4,
+            explanation:
+              "Autorregulação + diálogo privado = resposta assertiva madura.",
           },
         ],
       },
       {
         id: "3-2",
-        tag: "😤 Crítica em Público",
+        type: "choice",
+        tag: "👥 Pressão Social",
         question:
-          "Seu gestor te critica na frente da equipe de uma forma que você considera injusta. Como você reage?",
+          "Você expressou uma posição numa reunião. Colegas começam a pressionar para você mudar de ideia — mas sem novos argumentos, só pressão social. O que você faz?",
         choices: [
           {
-            id: "3-2-a",
-            text: "Revida na hora com o mesmo tom na frente de todos.",
+            id: "a",
+            text: "Recua para preservar o bom relacionamento com o grupo.",
             points: 0,
             type: "wrong",
             feedback:
-              "Reagir emocionalmente em público escala o conflito e prejudica sua imagem.",
+              "Ceder à pressão social sem novos argumentos não é flexibilidade — você está ensinando que pressão funciona.",
           },
           {
-            id: "3-2-b",
-            text: "Não diz nada, mas fica ruminando o ressentimento por dias.",
+            id: "b",
+            text: "Mantém a posição em silêncio e para de responder ao grupo.",
             points: 25,
             type: "partial",
             feedback:
-              "O ressentimento guardado corrói os relacionamentos e sua saúde. Meia solução.",
+              "Manter a posição é certo, mas o silêncio pode parecer arrogância ou recusa ao diálogo.",
           },
           {
-            id: "3-2-c",
-            text: 'Mantém a calma na hora e depois pede uma conversa privada: "Quero entender melhor o que aconteceu."',
+            id: "c",
+            text: '"Estou aberto a mudar de ideia — mas por argumentos, não por pressão. Me mostrem onde meu raciocínio está errado."',
             points: 100,
             type: "correct",
             feedback:
-              "Maturidade em ação! Autorregulação no momento difícil + diálogo privado é o caminho assertivo.",
+              "Assertividade exemplar. Firme, aberto e devolveu a responsabilidade a quem pressiona.",
           },
         ],
       },
       {
         id: "3-3",
-        tag: "😬 Assumindo o Erro",
-        question:
-          "Você cometeu um erro que atrasou a entrega de um projeto importante. O que você faz?",
-        choices: [
+        type: "spot",
+        tag: "🔍 Conversa no Corredor",
+        context:
+          "Dois colegas conversando sobre uma decisão da empresa que foi mal recebida.",
+        question: "Identifique a fala que quebra a comunicação assertiva.",
+        messages: [
           {
-            id: "3-3-a",
-            text: "Tenta minimizar o erro e redireciona a culpa para outros fatores.",
-            points: 0,
-            type: "wrong",
-            feedback:
-              "Negar responsabilidade corrói a confiança. Profissionais que assumem erros inspiram mais do que os que nunca erram.",
+            id: "m1",
+            author: "Renata",
+            text: "Não concordei com a decisão sobre o modelo de trabalho. Acho que deveríamos ter sido consultados antes.",
+            isTarget: false,
+            explanation:
+              "Expressa discordância de forma clara e específica — assertiva.",
           },
           {
-            id: "3-3-b",
-            text: "Admite o erro somente se perguntado diretamente.",
-            points: 25,
-            type: "partial",
-            feedback:
-              "Melhor do que negar, mas esperar ser perguntado ainda é evitar a responsabilidade proativamente.",
+            id: "m2",
+            author: "Gustavo",
+            text: "Também senti falta de mais diálogo. Quero entender melhor os motivos antes de opinar.",
+            isTarget: false,
+            explanation:
+              "Honesto sobre seus sentimentos e aberto ao diálogo — assertivo.",
           },
           {
-            id: "3-3-c",
-            text: '"Errei nessa etapa e isso atrasou o projeto. Me desculpem. Já tenho um plano para corrigir e evitar que se repita."',
-            points: 100,
-            type: "correct",
-            feedback:
-              "Responsabilidade com humildade e solução. Essa postura constrói confiança e credibilidade.",
+            id: "m3",
+            author: "Renata",
+            text: "Honestamente, a gestão aqui nunca respeita a opinião de ninguém. É sempre assim, todo mundo sabe.",
+            isTarget: true,
+            explanation:
+              '"Nunca" e "todo mundo sabe" são generalizações que fogem do fato específico e jogam a conversa para um campo emocional sem saída.',
+          },
+          {
+            id: "m4",
+            author: "Gustavo",
+            text: "Acho que vale levar esse ponto formalmente para o RH ou numa reunião de feedback.",
+            isTarget: false,
+            explanation:
+              "Propõe um canal adequado para a discordância — assertivo.",
           },
         ],
       },
@@ -322,104 +359,119 @@ export const PHASES_DATA: Phase[] = [
   {
     id: 4,
     number: 4,
-    title: "Gestão de Conflitos",
+    title: "Conflitos e Mediação",
     description:
-      "Conflitos são inevitáveis em qualquer relação. A questão não é se surgirão — é como você vai conduzi-los.",
-    tip: "💡 <strong>Não fuja do conflito — gerencie-o.</strong> Conflito bem conduzido fortalece as relações.",
+      "Todas as opções têm alguma lógica aparente. A melhor exige mais reflexão.",
+    tip: '💡 Nível 4. <strong>Em conflitos, o que parece mais "profissional" nem sempre é o mais assertivo.</strong>',
     scenarios: [
       {
         id: "4-1",
-        tag: "⚔️ Conflito na Equipe",
-        question:
-          "Dois membros da sua equipe estão em conflito aberto e o clima está pesado para todos. Como você age?",
-        choices: [
+        type: "sort",
+        tag: "📊 Mediar Conflito Relatado",
+        situation:
+          "Um membro da equipe te procura para relatar um conflito com um colega e pedir que você tome uma atitude.",
+        question: "Ordene as reações do líder da PIOR para a MELHOR:",
+        items: [
           {
-            id: "4-1-a",
-            text: "Chama os dois juntos sem aviso prévio e confronta cada um na frente do outro.",
-            points: 0,
-            type: "wrong",
-            feedback:
-              "Confrontar sem preparo pode escalar o conflito. As pessoas precisam de espaço seguro antes de dialogar.",
+            id: "s1",
+            text: "Chama o outro membro e apresenta o que o primeiro te contou.",
+            rank: 1,
+            explanation:
+              "Viola a confidencialidade e já posiciona o segundo como réu antes de ser ouvido.",
           },
           {
-            id: "4-1-b",
-            text: "Finge que não está acontecendo para não se meter.",
-            points: 25,
-            type: "partial",
-            feedback:
-              "A omissão pode deixar feridas abertas que comprometem o clima e a produtividade da equipe.",
+            id: "s2",
+            text: "Diz que não interfere em conflitos pessoais entre membros.",
+            rank: 2,
+            explanation:
+              "Negar o papel de liderança é irresponsabilidade disfarçada de neutralidade.",
           },
           {
-            id: "4-1-c",
-            text: "Conversa individualmente com cada um para ouvir os dois lados, depois propõe uma reunião conjunta de mediação.",
-            points: 100,
-            type: "correct",
-            feedback:
-              "Mediação exemplar! Ouvir cada parte separadamente garante que todos se sintam seguros para ser honestos.",
+            id: "s3",
+            text: "Ouve com atenção e encaminha para o RH resolver.",
+            rank: 3,
+            explanation:
+              "Pode ser necessário, mas terceirizar sem tentar resolver primeiro raramente é o caminho ideal.",
+          },
+          {
+            id: "s4",
+            text: "Ouve em confidência e diz que vai conversar com o outro membro separadamente antes de qualquer ação.",
+            rank: 4,
+            explanation:
+              "Ouvir os dois lados separadamente, preservando a confidência, é o ponto de partida de uma mediação justa.",
           },
         ],
       },
       {
         id: "4-2",
-        tag: "🔥 Discussão Acalorada",
+        type: "choice",
+        tag: "📉 Atraso com Causa Interna",
         question:
-          "Durante uma reunião, a discussão esquenta e alguém começa a elevar a voz. Como você reage?",
+          "Você lidera um projeto atrasado por causa de um membro que não está entregando. Precisa comunicar o atraso ao cliente. O que você faz?",
         choices: [
           {
-            id: "4-2-a",
-            text: "Eleva a voz também para se fazer ouvir.",
+            id: "a",
+            text: "Menciona ao cliente que o atraso foi causado por um membro específico da equipe.",
             points: 0,
             type: "wrong",
             feedback:
-              "Voz com voz cria caos. Quem mantém a calma nesse momento tem muito mais poder de influência.",
+              "Expor um membro ao cliente é falha de liderança. A responsabilidade do projeto é sua, independente da causa interna.",
           },
           {
-            id: "4-2-b",
-            text: "Fica em silêncio, sem saber como reagir.",
+            id: "b",
+            text: "Comunica o atraso sem dar nenhuma explicação para manter discrição.",
             points: 25,
             type: "partial",
             feedback:
-              "O silêncio pode evitar o escalamento, mas uma intervenção calma e firme seria muito mais eficaz.",
+              "Discrição interna está certa, mas ausência total de contexto gera desconfiança. Transparência sobre o plano é diferente de expor a equipe.",
           },
           {
-            id: "4-2-c",
-            text: '"Vamos pausar um momento. Todos queremos chegar a uma boa solução. Podemos continuar com mais calma?"',
+            id: "c",
+            text: "Comunica o atraso com honestidade, explica o que está sendo feito e propõe uma nova data realista.",
             points: 100,
             type: "correct",
             feedback:
-              "Liderança comunicacional! Você desescalou a tensão, reafirmou o objetivo comum e propôs uma mudança de postura.",
+              "Comunicação profissional e assertiva. Clientes toleram atrasos muito melhor com informação proativa e plano claro.",
           },
         ],
       },
       {
         id: "4-3",
-        tag: "📋 Decisão com a Qual Discorda",
+        type: "spot",
+        tag: "🔍 Feedback Dado de Forma Inadequada",
+        context:
+          "Uma líder dando feedback para um membro da equipe após um evento com problemas.",
         question:
-          "A liderança tomou uma decisão importante com a qual você discorda. O que você faz?",
-        choices: [
+          "Identifique a fala que não segue os princípios do feedback assertivo.",
+        messages: [
           {
-            id: "4-3-a",
-            text: "Reclama para os colegas, mas não fala nada com quem decidiu.",
-            points: 0,
-            type: "wrong",
-            feedback:
-              "Falar para os colegas o que deveria ser dito à liderança cria um ambiente tóxico de fofoca e desconfiança.",
+            id: "m1",
+            author: "Márcia (líder)",
+            text: "Preciso conversar com você sobre o evento de ontem. Você tem um momento?",
+            isTarget: false,
+            explanation: "Pede espaço e cria contexto — abordagem assertiva.",
           },
           {
-            id: "4-3-b",
-            text: "Aceita a decisão sem questionar, mas fica insatisfeito internamente.",
-            points: 25,
-            type: "partial",
-            feedback:
-              "Se sua perspectiva pode contribuir para uma decisão melhor, a assertividade pede que você a compartilhe.",
+            id: "m2",
+            author: "Pedro",
+            text: "Claro, pode falar.",
+            isTarget: false,
+            explanation: "Receptivo.",
           },
           {
-            id: "4-3-c",
-            text: 'Pede uma conversa com a liderança: "Tenho uma perspectiva diferente sobre isso. Posso compartilhar?"',
-            points: 100,
-            type: "correct",
-            feedback:
-              "Exato! Levar sua discordância diretamente a quem decidiu, com respeito e abertura, é o caminho assertivo.",
+            id: "m3",
+            author: "Márcia (líder)",
+            text: "Você é sempre desorganizado. Não sei como chegou até aqui sendo assim.",
+            isTarget: true,
+            explanation:
+              'Ataca o caráter ("você é assim") em vez do comportamento específico. "Sempre" é generalizante e o tom é desrespeitoso.',
+          },
+          {
+            id: "m4",
+            author: "Pedro",
+            text: "Entendo sua insatisfação. O que especificamente não funcionou para eu corrigir?",
+            isTarget: false,
+            explanation: "Resposta madura — busca o concreto.",
           },
         ],
       },
@@ -428,104 +480,120 @@ export const PHASES_DATA: Phase[] = [
   {
     id: 5,
     number: 5,
-    title: "Ambiente e Pertencimento",
+    title: "Dinâmicas de Grupo",
     description:
-      "Um ambiente saudável é aquele onde todos se sentem seguros para ser quem são e expressar o que pensam.",
-    tip: "💡 <strong>Pertencimento se constrói em pequenos gestos.</strong> Uma palavra de acolhimento pode mudar o dia de alguém.",
+      "As dinâmicas de grupo são sutis. Respostas parciais aqui são bem convincentes.",
+    tip: '💡 Nível 5. <strong>O que parece "manter o ambiente saudável" às vezes perpetua o problema.</strong>',
     scenarios: [
       {
         id: "5-1",
-        tag: "👋 Pessoa Nova no Grupo",
+        type: "spot",
+        tag: "🔍 Reunião com Exclusão",
+        context:
+          "Reunião de equipe discutindo estratégias para o próximo trimestre.",
         question:
-          "Uma pessoa nova entra na equipe e parece perdida e tímida nos primeiros dias. O que você faz?",
-        choices: [
+          "Identifique a fala que compromete a segurança psicológica do grupo.",
+        messages: [
           {
-            id: "5-1-a",
-            text: "Espera que o RH ou o gestor faça a integração — não é sua responsabilidade.",
-            points: 25,
-            type: "partial",
-            feedback:
-              "Integração não é só responsabilidade formal. Qualquer membro da equipe pode e deve acolher.",
+            id: "m1",
+            author: "Thiago",
+            text: "Tenho uma ideia diferente da apresentada — posso compartilhar?",
+            isTarget: false,
+            explanation: "Pede espaço antes de falar — assertivo e respeitoso.",
           },
           {
-            id: "5-1-b",
-            text: "Acena de longe no corredor e segue em frente.",
-            points: 0,
-            type: "wrong",
-            feedback:
-              "A pessoa nova provavelmente sai do primeiro dia sem se sentir pertencente. Pequenos gestos fazem diferença enorme.",
+            id: "m2",
+            author: "Líder",
+            text: "Com certeza, Thiago. Quero ouvir perspectivas diferentes.",
+            isTarget: false,
+            explanation: "Abre o espaço — assertivo.",
           },
           {
-            id: "5-1-c",
-            text: "Vai até ela, se apresenta, pergunta como está sendo a adaptação e oferece ajuda.",
-            points: 100,
-            type: "correct",
-            feedback:
-              "Isso é criar pertencimento! Um gesto simples pode ser o início de uma ótima parceria.",
+            id: "m3",
+            author: "Sônia",
+            text: "Bem, se é para opinar... eu prefiro nem falar. Toda vez que eu trago algo diferente, não vai a lugar nenhum de qualquer forma.",
+            isTarget: false,
+            explanation:
+              "Expressa frustração real — não é um problema de comunicação em si, é um sintoma de ambiente inseguro.",
+          },
+          {
+            id: "m4",
+            author: "Carlos",
+            text: "Thiago, com todo respeito, você está aqui há 3 meses. Talvez seja cedo para questionar estratégias consolidadas.",
+            isTarget: true,
+            explanation:
+              "Invalida a contribuição baseando-se em tempo de casa, não no mérito da ideia. Cria hierarquia que silencia vozes novas.",
           },
         ],
       },
       {
         id: "5-2",
-        tag: "😶 Colega se Isolando",
-        question:
-          "Você percebe que um colega próximo está se afastando do grupo gradualmente, sem explicação. O que você faz?",
-        choices: [
+        type: "sort",
+        tag: "📊 Novo Membro Dominante",
+        situation:
+          "Um novo membro da equipe domina todas as reuniões, interrompendo os outros constantemente.",
+        question: "Ordene as reações do líder da PIOR para a MELHOR:",
+        items: [
           {
-            id: "5-2-a",
-            text: "Não faz nada — se ele quiser falar, ele procura.",
-            points: 0,
-            type: "wrong",
-            feedback:
-              "O afastamento silencioso é quase sempre um sinal de que algo não vai bem. Esperar pode ser tarde demais.",
+            id: "s1",
+            text: "Ignora — cada um tem seu espaço para se defender.",
+            rank: 1,
+            explanation:
+              "Silêncio diante de dinâmica excludente é cumplicidade passiva.",
           },
           {
-            id: "5-2-b",
-            text: 'Manda um "ei, sumido!" por mensagem e pronto.',
-            points: 25,
-            type: "partial",
-            feedback:
-              "Melhor do que ignorar, mas o tom descontraído pode minimizar algo sério.",
+            id: "s2",
+            text: "Espera a pessoa perceber sozinha com o tempo.",
+            rank: 2,
+            explanation:
+              "O comportamento pode continuar por meses enquanto o ambiente se deteriora.",
           },
           {
-            id: "5-2-c",
-            text: '"Tenho sentido sua falta. Está tudo bem? Se quiser conversar, estou disponível — sem pressão."',
-            points: 100,
-            type: "correct",
-            feedback:
-              "Perfeito! Você expressou cuidado genuíno, abriu espaço sem pressionar e demonstrou disponibilidade.",
+            id: "s3",
+            text: 'Na próxima interrupção, diz publicamente: "Deixa o [nome] terminar."',
+            rank: 3,
+            explanation:
+              "Intervém no momento certo, mas o confronto público repetido pode criar mais constrangimento do que solução.",
+          },
+          {
+            id: "s4",
+            text: 'Conversa em particular: "Quero compartilhar algo que acho que vai te ajudar a colaborar ainda melhor com o time."',
+            rank: 4,
+            explanation:
+              "Privado, direto e com intenção clara de ajudar — chance real de mudança duradoura.",
           },
         ],
       },
       {
         id: "5-3",
-        tag: "🌡️ Comentário Constrangedor",
+        type: "choice",
+        tag: "🪞 Equipe Que Nunca Discorda",
         question:
-          "Durante uma conversa em grupo, alguém faz um comentário inapropriado. Todos ficam em silêncio. Você:",
+          "Você lidera uma equipe onde ninguém nunca discorda de você nas reuniões. Decisões passam sempre facilmente. O que isso indica e o que você faz?",
         choices: [
           {
-            id: "5-3-a",
-            text: "Ri junto para não criar situação estranha.",
-            points: 25,
-            type: "partial",
-            feedback:
-              "Validar o comentário por conveniência contribui para um ambiente onde as pessoas não se sentem seguras.",
-          },
-          {
-            id: "5-3-b",
-            text: '"Esse comentário não foi legal. Acho que podemos nos tratar melhor do que isso."',
-            points: 100,
-            type: "correct",
-            feedback:
-              "Coragem assertiva! Você nomeou o problema com respeito e sem agredir. Isso cria ambientes psicologicamente seguros.",
-          },
-          {
-            id: "5-3-c",
-            text: "Ignora e muda de assunto rapidamente.",
+            id: "a",
+            text: "Aprecia o alinhamento — o time confia em você e as decisões são boas.",
             points: 0,
             type: "wrong",
             feedback:
-              "Ignorar sinaliza para todos que esse tipo de comentário é aceitável. O silêncio tem um custo real.",
+              "Equipes que nunca discordam do líder geralmente estão com medo, não alinhadas. Consenso fácil demais é sinal de alerta.",
+          },
+          {
+            id: "b",
+            text: "Pergunta ao final de cada reunião se alguém tem uma perspectiva diferente.",
+            points: 25,
+            type: "partial",
+            feedback:
+              "Melhor do que nada, mas perguntar coletivamente ao final — quando o grupo já consolidou consenso — raramente produz discordâncias reais.",
+          },
+          {
+            id: "c",
+            text: "Conversa individualmente com membros, admite que pode estar criando dinâmica inibidora e pede feedbacks sobre como tornar o espaço mais seguro.",
+            points: 100,
+            type: "correct",
+            feedback:
+              "Liderança autocrítica real. Ao nomear e assumir o problema, você cria condições para a cultura mudar de verdade.",
           },
         ],
       },
@@ -534,104 +602,119 @@ export const PHASES_DATA: Phase[] = [
   {
     id: 6,
     number: 6,
-    title: "Comunicação Digital",
+    title: "Dilemas Comunicacionais",
     description:
-      "Mensagens de texto, e-mails e redes sociais ampliam mal-entendidos. Comunicação digital exige ainda mais cuidado.",
-    tip: "💡 <strong>O que é escrito permanece.</strong> Antes de enviar, pergunte: 'Eu diria isso pessoalmente, da mesma forma?'",
+      'Cenários onde a resposta "correta" vai contra o instinto imediato.',
+    tip: "💡 Nível 6. <strong>O que parece mais empático nem sempre é o mais assertivo.</strong> Cuidado com os instintos aqui.",
     scenarios: [
       {
         id: "6-1",
-        tag: "📱 Conflito por Mensagem",
-        question:
-          "Um desentendimento sério começou num grupo de WhatsApp da equipe. As mensagens foram mal interpretadas e o clima está pesado. Como você age?",
-        choices: [
+        type: "sort",
+        tag: "📊 Reações ao Feedback Rejeitado",
+        situation:
+          "Você deu um feedback difícil para um colega e ele ficou claramente na defensiva e chateado.",
+        question: "Ordene as reações da PIOR para a MELHOR:",
+        items: [
           {
-            id: "6-1-a",
-            text: "Entra no grupo e escreve um longo texto explicando sua posição e cobrando quem errou.",
-            points: 0,
-            type: "wrong",
-            feedback:
-              "Resolver publicamente o que devia ser privado escala o conflito e expõe as pessoas.",
+            id: "s1",
+            text: "Recua e suaviza o que disse para aliviar o desconforto dele.",
+            rank: 1,
+            explanation:
+              "Invalida o feedback e ensina que defensividade funciona para abrandar críticas.",
           },
           {
-            id: "6-1-b",
-            text: "Sai do grupo sem falar nada.",
-            points: 0,
-            type: "wrong",
-            feedback:
-              "Fugir do conflito digital não o resolve — piora, porque gera mais interpretações negativas.",
+            id: "s2",
+            text: "Deixa o tempo passar sem retomar — ele vai processar sozinho.",
+            rank: 2,
+            explanation:
+              "O feedback pode ser lembrado apenas pelo desconforto, não pelo crescimento.",
           },
           {
-            id: "6-1-c",
-            text: "Envia mensagem privada para os envolvidos e propõe uma conversa por chamada ou pessoalmente.",
-            points: 100,
-            type: "correct",
-            feedback:
-              "Excelente! Conflitos sérios precisam de comunicação com voz e presença, não de texto.",
+            id: "s3",
+            text: "Mantém o que disse e muda de assunto para aliviar o clima.",
+            rank: 3,
+            explanation: "Mantém a posição, mas encerra sem resolução real.",
+          },
+          {
+            id: "s4",
+            text: '"Percebo que foi difícil de ouvir. Não precisa responder agora — estou disponível para continuar quando quiser."',
+            rank: 4,
+            explanation:
+              "Mantém o feedback, acolhe a reação sem validar a defensividade e deixa a porta aberta.",
           },
         ],
       },
       {
         id: "6-2",
-        tag: "📧 E-mail Mal Interpretado",
+        type: "spot",
+        tag: "🔍 Conversa com Triangulação",
+        context:
+          "Uma colega vem até você falar sobre um problema que ela tem com outra pessoa da equipe.",
         question:
-          "Você recebe um e-mail de um colega que soa agressivo e direto. Você se sente ofendido. O que você faz?",
-        choices: [
+          "Identifique a fala que usa triangulação em vez de comunicação direta.",
+        messages: [
           {
-            id: "6-2-a",
-            text: "Responde com o mesmo tom, deixando claro que não gostou.",
-            points: 0,
-            type: "wrong",
-            feedback:
-              "Responder agressividade com agressividade escalona o conflito por escrito — e fica registrado.",
+            id: "m1",
+            author: "Juliana",
+            text: "Preciso te contar uma coisa. A Clara tem falado mal de mim para o gestor. Você precisa me ajudar a confrontá-la.",
+            isTarget: true,
+            explanation:
+              "Pede que um terceiro confronte a Clara em vez de ir diretamente à pessoa envolvida — isso é triangulação clássica.",
           },
           {
-            id: "6-2-b",
-            text: "Engole e não faz nada, mas guarda a mágoa.",
-            points: 25,
-            type: "partial",
-            feedback:
-              "O ressentimento acumulado em silêncio cobra seu preço mais tarde no relacionamento.",
+            id: "m2",
+            author: "Você",
+            text: "Entendo que está difícil. Mas você já tentou conversar diretamente com a Clara sobre isso?",
+            isTarget: false,
+            explanation: "Redireciona para a comunicação direta — assertivo.",
           },
           {
-            id: "6-2-c",
-            text: "Antes de responder, assume que pode ser falta de contexto e liga ou vai pessoalmente esclarecer.",
-            points: 100,
-            type: "correct",
-            feedback:
-              "Inteligência comunicacional! Tom de texto é difícil de interpretar. Verificar antes de reagir evita conflitos desnecessários.",
+            id: "m3",
+            author: "Juliana",
+            text: "Não, fico com medo de piorar a situação.",
+            isTarget: false,
+            explanation: "Expressa dificuldade honestamente.",
+          },
+          {
+            id: "m4",
+            author: "Você",
+            text: "Posso te ajudar a pensar em como abordar ela diretamente, se quiser. Acho que seria o caminho mais eficaz.",
+            isTarget: false,
+            explanation:
+              "Oferece apoio sem se tornar intermediário — assertivo.",
           },
         ],
       },
       {
         id: "6-3",
-        tag: "💬 Crítica nas Redes",
+        type: "choice",
+        tag: "🤐 Avaliação de Amigo",
         question:
-          "A página da sua empresa nas redes sociais recebeu um comentário negativo público. Como você responde?",
+          "Seu gestor pede que você avalie formalmente o trabalho de um amigo próximo. O projeto tem falhas sérias. O que você faz?",
         choices: [
           {
-            id: "6-3-a",
-            text: "Responde de forma defensiva, explicando por que o cliente está errado.",
+            id: "a",
+            text: "Ameniza a avaliação para não prejudicar o amigo.",
             points: 0,
             type: "wrong",
             feedback:
-              "Resposta defensiva em público prejudica a imagem da empresa e não resolve o problema do cliente.",
+              "Avaliação desonesta prejudica o amigo a longo prazo — ele não recebe o feedback que precisa — e compromete sua integridade profissional.",
           },
           {
-            id: "6-3-b",
-            text: "Apaga o comentário sem responder.",
+            id: "b",
+            text: "Faz avaliação totalmente honesta e envia sem comentar com o amigo antes.",
             points: 25,
             type: "partial",
             feedback:
-              "Apagar pode parecer censura e gerar mais reação negativa.",
+              "A honestidade é certa, mas ser pego de surpresa por uma avaliação negativa de um amigo próximo pode danificar o relacionamento desnecessariamente.",
           },
           {
-            id: "6-3-c",
-            text: "Responde com respeito, agradece o feedback e convida para uma conversa privada para resolver.",
+            id: "c",
+            text: 'Avisa o amigo antes: "Precisei ser honesto — tenho observações importantes e quero conversar contigo antes que chegue ao gestor."',
             points: 100,
             type: "correct",
             feedback:
-              "Perfeito! Transparência + acolhimento + solução privada = comunicação assertiva no ambiente digital.",
+              "Honesto profissionalmente e cuidadoso no relacionamento. Amizade real inclui honestidade — e o aviso prévio demonstra respeito genuíno.",
           },
         ],
       },
@@ -640,104 +723,120 @@ export const PHASES_DATA: Phase[] = [
   {
     id: 7,
     number: 7,
-    title: "Feedback e Desenvolvimento",
+    title: "Alta Complexidade",
     description:
-      "Dar e receber feedback com maturidade é uma das práticas mais transformadoras em qualquer relação profissional ou pessoal.",
-    tip: "💡 <strong>Feedback é presente, não punição.</strong> A intenção de ajudar a crescer muda tudo.",
+      "Aqui o instinto imediato costuma errar. Pense duas vezes antes de responder.",
+    tip: "💡 Nível 7. <strong>As melhores respostas muitas vezes são as mais contraintuitivas.</strong>",
     scenarios: [
       {
         id: "7-1",
-        tag: "🔧 Dar Feedback Difícil",
+        type: "choice",
+        tag: "🕵️ Sabotagem Sutil",
         question:
-          "Um membro da sua equipe cometeu um erro sério que comprometeu um resultado. Você precisa conversar com ele. Como faz?",
+          "Você percebe que um membro sênior está sistematicamente dificultando o trabalho de um colega mais novo — com comentários, atrasos e omissões. O que você faz?",
         choices: [
           {
-            id: "7-1-a",
-            text: "Chama na hora, ainda frustrado, e fala o que pensa sem filtro.",
-            points: 0,
-            type: "wrong",
-            feedback:
-              "Feedback dado no calor da emoção vira ataque. Corrija o problema, não a pessoa.",
-          },
-          {
-            id: "7-1-b",
-            text: "Não fala nada para não criar clima ruim.",
+            id: "a",
+            text: "Conversa com o membro mais novo para que ele se proteja e documente os episódios.",
             points: 25,
             type: "partial",
             feedback:
-              "Evitar o feedback priva a pessoa da chance de crescer e sinaliza que erros não têm consequências.",
+              "Ajuda o indivíduo, mas não resolve o problema. O comportamento tóxico continua enquanto você não vai à raiz.",
           },
           {
-            id: "7-1-c",
-            text: "Espera se acalmar, pede uma conversa privada e usa os fatos, o impacto e um pedido claro de mudança.",
+            id: "b",
+            text: "Documenta os comportamentos e aguarda mais evidências antes de agir.",
+            points: 25,
+            type: "partial",
+            feedback:
+              "Prudência tem valor, mas cada dia que você espera o dano continua. Há um ponto em que esperar mais evidências é omissão.",
+          },
+          {
+            id: "c",
+            text: "Conversa diretamente com o membro sênior sobre o que observou e o impacto que está gerando no time.",
             points: 100,
             type: "correct",
             feedback:
-              "Impecável! Tempo certo + espaço privado + foco no comportamento = feedback que transforma.",
+              "Ir à raiz é a única forma de resolver. Assertividade de liderança significa nomear o que você observa — sem esperar a situação estourar.",
           },
         ],
       },
       {
         id: "7-2",
-        tag: "👂 Receber Feedback",
-        question:
-          "Seu gestor te chama para dar um retorno negativo sobre algo que você fez. Como você reage?",
-        choices: [
+        type: "sort",
+        tag: "📊 Comunicar Mudança Impopular",
+        situation:
+          "Você precisa comunicar ao time uma mudança que sabe que vai ser impopular.",
+        question: "Ordene as abordagens da PIOR para a MELHOR:",
+        items: [
           {
-            id: "7-2-a",
-            text: "Fica na defensiva e começa a justificar cada ponto antes de ouvi-lo terminar.",
-            points: 0,
-            type: "wrong",
-            feedback:
-              "Defensividade bloqueia o aprendizado e frustra quem está tentando te ajudar a crescer.",
+            id: "s1",
+            text: "Implementa gradualmente sem comunicar para não gerar reação imediata.",
+            rank: 1,
+            explanation:
+              "Mudanças não comunicadas geram rumores que costumam ser piores do que a mudança em si.",
           },
           {
-            id: "7-2-b",
-            text: "Concorda com tudo sem questionar, mesmo sem entender ou concordar.",
-            points: 25,
-            type: "partial",
-            feedback:
-              "Concordância passiva não é maturidade — é evitar o desconforto sem processar o que foi dito.",
+            id: "s2",
+            text: "Consulta a equipe antes de decidir, mesmo com a decisão já tomada internamente.",
+            rank: 2,
+            explanation:
+              "Consulta falsa é mais prejudicial do que não consultar — quando percebem, a confiança desaba.",
           },
           {
-            id: "7-2-c",
-            text: "Ouve até o fim com atenção, agradece a honestidade e faz perguntas para entender melhor como melhorar.",
-            points: 100,
-            type: "correct",
-            feedback:
-              "Maturidade exemplar! Quem sabe receber feedback cresce muito mais rápido do que quem se defende.",
+            id: "s3",
+            text: "Anuncia a mudança e as razões com clareza, sem abrir para debate.",
+            rank: 3,
+            explanation:
+              "Transparente, mas sem espaço para processar gera resistência silenciosa.",
+          },
+          {
+            id: "s4",
+            text: "Comunica a mudança com contexto e razões, e abre espaço real para perguntas — mesmo que a decisão não mude.",
+            rank: 4,
+            explanation:
+              "Não finge que é negociável, mas dá espaço para as pessoas processarem e serem ouvidas.",
           },
         ],
       },
       {
         id: "7-3",
-        tag: "🤝 Feedback entre Pares",
+        type: "spot",
+        tag: "🔍 Negociação sob Pressão",
+        context:
+          "Reunião de negociação com um cliente importante que está usando pressão para fechar rápido.",
         question:
-          "Você percebe que um amigo e colega está tomando decisões que podem prejudicá-lo profissionalmente. Como você aborda?",
-        choices: [
+          "Identifique a fala que demonstra falta de assertividade na negociação.",
+        messages: [
           {
-            id: "7-3-a",
-            text: "Comenta com outros colegas em vez de falar diretamente com ele.",
-            points: 0,
-            type: "wrong",
-            feedback:
-              "Falar com terceiros antes de falar com a pessoa é triangulação — prejudica a confiança e não resolve.",
+            id: "m1",
+            author: "Cliente",
+            text: "Precisamos fechar isso hoje. Nossa diretoria está esperando e não podemos atrasar mais.",
+            isTarget: false,
+            explanation:
+              "Pressão do cliente — não é comunicação da sua equipe.",
           },
           {
-            id: "7-3-b",
-            text: "Não faz nada — não é problema seu.",
-            points: 25,
-            type: "partial",
-            feedback:
-              "Omissão quando você pode ajudar também tem um custo para a amizade e para o outro.",
+            id: "m2",
+            author: "Colega A",
+            text: "Entendo a urgência. Preciso de algumas horas para avaliar adequadamente os termos. Posso retornar até as 17h?",
+            isTarget: false,
+            explanation: "Assertivo — mantém o controle sem ceder à pressão.",
           },
           {
-            id: "7-3-c",
-            text: "Pede um momento particular, compartilha o que observou com cuidado e pergunta como ele está se sentindo.",
-            points: 100,
-            type: "correct",
-            feedback:
-              "Isso é cuidado assertivo! Presença + honestidade + pergunta aberta = amizade de verdade.",
+            id: "m3",
+            author: "Colega B",
+            text: "Tudo bem, vamos fechar agora para não perder o cliente. Podemos ajustar os detalhes depois.",
+            isTarget: true,
+            explanation:
+              'Cede à pressão artificial para "não perder o cliente" — fecha um acordo pior e valida a tática de pressão.',
+          },
+          {
+            id: "m4",
+            author: "Colega A",
+            text: "Se o prazo de hoje não funcionar, podemos revisar o processo para atender a urgência sem comprometer a qualidade da decisão.",
+            isTarget: false,
+            explanation: "Propõe solução sem ceder — assertivo.",
           },
         ],
       },
@@ -746,104 +845,118 @@ export const PHASES_DATA: Phase[] = [
   {
     id: 8,
     number: 8,
-    title: "Comunicação e Liderança",
+    title: "Nível Especialista",
     description:
-      "Comunicação assertiva é a base de qualquer liderança saudável — seja no trabalho, na família ou em qualquer grupo.",
-    tip: "💡 <strong>Liderar é comunicar.</strong> A forma como você se expressa define o ambiente que você cria.",
+      "O nível mais alto. A diferença entre as respostas é sutil e profunda.",
+    tip: "💡 Nível especialista. <strong>Se errar, leia o feedback — ele ensina mais do que o acerto.</strong>",
     scenarios: [
       {
         id: "8-1",
-        tag: "🤝 Grupos em Tensão",
-        question:
-          "Dois grupos da organização estão em tensão por causa de um mal-entendido entre eles. Como líder, o que você faz?",
-        choices: [
+        type: "spot",
+        tag: "🔍 Após Erro do Líder",
+        context:
+          "Reunião da equipe no dia seguinte a uma decisão do líder que resultou em um erro que afetou todos.",
+        question: "Identifique a fala do líder que não é assertiva.",
+        messages: [
           {
-            id: "8-1-a",
-            text: "Toma partido do grupo que você acha que está certo.",
-            points: 0,
-            type: "wrong",
-            feedback:
-              "Tomar partido divide mais ainda. Líder assertivo facilita o diálogo, não escolhe lados.",
+            id: "m1",
+            author: "Líder",
+            text: "Quero falar sobre o que aconteceu ontem. A decisão foi minha e o resultado não foi o esperado.",
+            isTarget: false,
+            explanation: "Assume a responsabilidade — assertivo.",
           },
           {
-            id: "8-1-b",
-            text: "Deixa que se resolvam sozinhos para não se envolver.",
-            points: 25,
-            type: "partial",
-            feedback:
-              "A omissão da liderança nesse momento permite que a tensão se enraíze e comprometa o ambiente.",
+            id: "m2",
+            author: "Membro",
+            text: "O prazo que perdemos vai afetar o cliente. Como vamos resolver?",
+            isTarget: false,
+            explanation: "Foco na solução — construtivo.",
           },
           {
-            id: "8-1-c",
-            text: "Ouve cada grupo separadamente e depois facilita uma reunião com foco no objetivo comum.",
-            points: 100,
-            type: "correct",
-            feedback:
-              "Mediação exemplar! O objetivo comum é o elo que une quando as perspectivas divergem.",
+            id: "m3",
+            author: "Líder",
+            text: "É verdade que errei, mas o contexto que tínhamos era limitado — o mercado mudou de uma hora para outra e praticamente ninguém teria feito diferente.",
+            isTarget: true,
+            explanation:
+              'Começa assumindo responsabilidade mas dilui com justificativas e comparações ("ninguém teria feito diferente"). Reduz o impacto do reconhecimento inicial.',
+          },
+          {
+            id: "m4",
+            author: "Líder",
+            text: "Aqui está o plano de correção. Quero ouvir sugestões de vocês para fortalecer a abordagem.",
+            isTarget: false,
+            explanation: "Foco em solução e colaboração — assertivo.",
           },
         ],
       },
       {
         id: "8-2",
-        tag: "📣 Comunicar Mudança Difícil",
+        type: "choice",
+        tag: "⚡ Confronto Parcialmente Justo",
         question:
-          "Você precisa comunicar uma mudança impopular para seu time. Como faz?",
+          "Um colega te confronta publicamente de forma que você considera parcialmente injusta — ele tem um ponto válido, mas exagerou no tom. Como você reage?",
         choices: [
           {
-            id: "8-2-a",
-            text: "Anuncia a mudança sem explicar o porquê e pede que todos aceitem.",
-            points: 0,
-            type: "wrong",
-            feedback:
-              'Anúncio sem contexto gera resistência. As pessoas precisam entender o "por quê" para aceitar o "o quê".',
-          },
-          {
-            id: "8-2-b",
-            text: "Adia o anúncio indefinidamente com medo da reação.",
+            id: "a",
+            text: "Defende sua posição na hora, explicando onde ele está errado sobre o tom e sobre o mérito ao mesmo tempo.",
             points: 25,
             type: "partial",
             feedback:
-              "A procrastinação não elimina o problema — alimenta rumores e aumenta a ansiedade do time.",
+              "Misturar a discussão do mérito com a discussão do tom no mesmo momento cria confusão e dispersa a conversa.",
           },
           {
-            id: "8-2-c",
-            text: "Explica o contexto e os motivos, ouve as preocupações e mantém canais abertos para perguntas.",
+            id: "b",
+            text: "Fica quieto para não escalar e depois ignora — não vale gastar energia.",
+            points: 0,
+            type: "wrong",
+            feedback:
+              "O ponto válido dele fica sem resposta e o tom inadequado sem consequência. Ambos precisam ser endereçados.",
+          },
+          {
+            id: "c",
+            text: 'Responde ao mérito com calma na hora, e depois conversa em particular sobre o tom: "Você levantou um ponto válido. Mas a forma como foi colocada foi difícil de ouvir."',
             points: 100,
             type: "correct",
             feedback:
-              "Transparência + escuta = liderança que gera confiança mesmo nas mudanças mais difíceis.",
+              "Separar mérito de forma é comunicação assertiva de alto nível. Você reconheceu o que tinha valor, não cedeu ao que não tinha, e endereçou os dois no espaço certo.",
           },
         ],
       },
       {
         id: "8-3",
-        tag: "🚪 Alguém Querendo Sair",
-        question:
-          "Um membro valioso da equipe demonstra insatisfação e sinaliza que pode sair. Como você age?",
-        choices: [
+        type: "sort",
+        tag: "📊 Decisão Revertida por Pressão",
+        situation:
+          "Você tomou uma decisão como líder. Após pressão emocional do time, está considerando reverter — mas não por novos argumentos, apenas pelo desconforto gerado.",
+        question: "Ordene as reações da PIOR para a MELHOR:",
+        items: [
           {
-            id: "8-3-a",
-            text: "Tenta convencê-lo a ficar com promessas que talvez não possa cumprir.",
-            points: 0,
-            type: "wrong",
-            feedback:
-              "Promessas vazias para reter pessoas criam problemas maiores no futuro e destroem a credibilidade.",
+            id: "s1",
+            text: "Reverte a decisão para recuperar o clima — liderança exige sensibilidade.",
+            rank: 1,
+            explanation:
+              "Reverter por pressão emocional, sem novos argumentos, mina sua autoridade. O time aprende que pressionar funciona.",
           },
           {
-            id: "8-3-b",
-            text: "Não faz nada — se ele quiser sair, é direito dele.",
-            points: 25,
-            type: "partial",
-            feedback:
-              "Indiferença com quem está insatisfeito também não é liderança. Vale ao menos ouvir.",
+            id: "s2",
+            text: "Mantém a decisão sem dar nenhuma explicação adicional.",
+            rank: 2,
+            explanation:
+              "Firmeza certa, mas sem diálogo o desconforto permanece e a relação com o time se deteriora.",
           },
           {
-            id: "8-3-c",
-            text: "Busca uma conversa honesta, ouve sem julgamento, entende as razões e respeita a decisão final.",
-            points: 100,
-            type: "correct",
-            feedback:
-              "Perfeito! Acolher, ouvir e respeitar a autonomia do outro — isso é liderança assertiva com humanidade.",
+            id: "s3",
+            text: "Pede uma reunião para ouvir as preocupações antes de decidir se mantém.",
+            rank: 3,
+            explanation:
+              "Melhor — abre espaço para argumentos reais. Mas se já ouviu e só há pressão emocional, pode prolongar o impasse.",
+          },
+          {
+            id: "s4",
+            text: 'Explica novamente o raciocínio da decisão e diz: "Estou aberto a mudar por argumentos — mas não por pressão."',
+            rank: 4,
+            explanation:
+              "Transparente, firme e justo. Dá ao time a oportunidade real de influenciar — por razões, não por clima.",
           },
         ],
       },
