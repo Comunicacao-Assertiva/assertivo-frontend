@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import type { GameState, Phase } from "@/types/game";
-import { Leaderboard } from "./Leaderboard";
 
 interface FinalResultProps {
   state: GameState;
   phases: Phase[];
+  maxScore: number;
   classification: { title: string; trophy: string };
   onRestart: () => void;
   onSubmitScore: (name?: string) => Promise<unknown>;
@@ -18,14 +18,15 @@ const MESSAGES: Record<string, string> = {
   "Comunicador Assertivo":
     "Ótimo resultado! Você já pratica a comunicação assertiva de forma sólida. Continue desenvolvendo as áreas com menor pontuação.",
   "Comunicador em Crescimento":
-    "Você está no caminho certo! Sua comunicação tem bases sólidas, mas há espaço importante para crescimento. Continue praticando!",
+    "Você está no caminho certo! Sua comunicação tem bases sólidas, mas há espaço importante para crescimento.",
   "Aprendiz em Comunicação":
-    "Todo grande comunicador começa de algum lugar. Identifique suas áreas mais desafiadoras e comece pequeno: uma conversa mais assertiva por dia já transforma sua comunidade.",
+    "Todo grande comunicador começa de algum lugar. Uma conversa mais assertiva por dia já transforma sua comunidade.",
 };
 
 export function FinalResult({
   state,
   phases,
+  maxScore,
   classification,
   onRestart,
   onSubmitScore,
@@ -34,7 +35,6 @@ export function FinalResult({
   const [playerName, setPlayerName] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  // Confetti on mount
   useEffect(() => {
     const colors = ["#C4873A", "#1B5E3B", "#fff", "#E09B45", "#2E7D55"];
     for (let i = 0; i < 80; i++) {
@@ -67,7 +67,7 @@ export function FinalResult({
       <div className="text-6xl font-black text-amber-400 leading-tight">
         {state.score}
       </div>
-      <p className="mb-2 text-base text-white/35">/ 10.000 pontos</p>
+      <p className="mb-2 text-base text-white/35">/ {maxScore} pontos</p>
       <p className="mb-6 max-w-xs text-sm leading-relaxed text-white/60">
         {MESSAGES[classification.title]}
       </p>
@@ -91,7 +91,7 @@ export function FinalResult({
         ))}
       </div>
 
-      {/* Phase breakdown */}
+      {/* Por fase */}
       <div className="mb-6 w-full max-w-sm space-y-2">
         {phases.map((ph, i) => (
           <div
@@ -102,17 +102,17 @@ export function FinalResult({
               Fase {ph.number} — {ph.title}
             </span>
             <span className="font-black text-amber-400">
-              {state.phaseScores[i]}/2000
+              {state.phaseScores[i]}/300
             </span>
           </div>
         ))}
       </div>
 
-      {/* Score submit */}
+      {/* Salvar score */}
       {!submitted ? (
         <div className="mb-6 w-full max-w-sm rounded-2xl border border-white/10 bg-white/5 p-5">
           <p className="mb-3 text-sm font-bold text-white/70">
-            Salvar pontuação no placar?
+            Salvar no placar?
           </p>
           <input
             type="text"
@@ -126,31 +126,26 @@ export function FinalResult({
             disabled={submitting}
             className="w-full rounded-xl bg-emerald-700 py-2.5 text-sm font-black text-white transition hover:bg-emerald-600 disabled:opacity-50"
           >
-            {submitting ? "Salvando..." : "Salvar no Placar"}
+            {submitting ? "Salvando..." : "Salvar Pontuação"}
           </button>
         </div>
       ) : (
         <p className="mb-6 text-sm font-bold text-green-400">
-          ✅ Pontuação salva no placar!
+          ✅ Pontuação salva!
         </p>
       )}
 
-      {/* Leaderboard */}
-      <div className="mb-8 w-full max-w-sm">
-        <Leaderboard />
-      </div>
-
-      {/* Actions */}
+      {/* Ações */}
       <div className="flex w-full max-w-sm flex-col gap-3">
         <button
           onClick={onRestart}
-          className="rounded-full bg-emerald-700 py-4 text-base font-black text-white shadow-[0_6px_24px_rgba(27,94,59,0.5)] transition-all hover:-translate-y-1 hover:bg-emerald-600"
+          className="rounded-full bg-emerald-700 py-4 text-base font-black text-white transition-all hover:-translate-y-1 hover:bg-emerald-600"
         >
           ▶ Jogar Novamente
         </button>
         <button
           onClick={() => {
-            const msg = `🎮 Joguei "Assertivo! – O Jogo" e fiz ${state.score}/10.000 pts!\n🏆 ${classification.title}\n\n"Seguindo a verdade em amor" — Ef 4:15`;
+            const msg = `🎮 Joguei "Assertivo! – O Jogo" e fiz ${state.score}/${maxScore} pts!\n🏆 ${classification.title}\n\n"Seguindo a verdade em amor" — Ef 4:15`;
             navigator.clipboard
               ?.writeText(msg)
               .then(() => alert("Resultado copiado!"));
