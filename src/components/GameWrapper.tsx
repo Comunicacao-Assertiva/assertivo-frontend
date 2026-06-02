@@ -11,12 +11,13 @@ export function GameWrapper() {
   const {
     state,
     phases,
-
     currentPhase,
     currentScenario,
     globalProgress,
+    maxScore,
     finalClassification,
     startGame,
+    goToGame,
     selectChoice,
     nextScenario,
     nextPhase,
@@ -26,7 +27,6 @@ export function GameWrapper() {
 
   return (
     <>
-      {/* Global confetti keyframes */}
       <style>{`
         @keyframes confettiFall {
           0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
@@ -50,7 +50,7 @@ export function GameWrapper() {
       {state.screen === "welcome" && <WelcomeScreen onStart={startGame} />}
 
       {state.screen === "phase-intro" && currentPhase && (
-        <PhaseIntro phase={currentPhase} onStart={() => startGame()} />
+        <PhaseIntro phase={currentPhase} onStart={goToGame} />
       )}
 
       {state.screen === "game" && currentPhase && currentScenario && (
@@ -69,7 +69,7 @@ export function GameWrapper() {
           phase={currentPhase}
           state={state}
           onNext={nextPhase}
-          isLast={state.phase === 4}
+          isLast={state.phase === phases.length - 1}
         />
       )}
 
@@ -77,6 +77,7 @@ export function GameWrapper() {
         <FinalResult
           state={state}
           phases={phases}
+          maxScore={maxScore}
           classification={finalClassification}
           onRestart={restart}
           onSubmitScore={submitScore}

@@ -4,7 +4,7 @@ import type { GameState, Choice, Screen } from "@/types/game";
 import { PHASES_DATA } from "@/data/phases";
 import { saveScore } from "@/lib/supabase";
 
-const N = PHASES_DATA.length; // automático — funciona com qualquer número de fases
+const N = PHASES_DATA.length;
 
 const makeInitial = (): GameState => ({
   screen: "welcome",
@@ -32,6 +32,7 @@ function reducer(state: GameState, action: Action): GameState {
   switch (action.type) {
     case "SET_SCREEN":
       return { ...state, screen: action.screen };
+
     case "SELECT_CHOICE": {
       if (state.answered) return state;
       const { choice } = action;
@@ -55,6 +56,7 @@ function reducer(state: GameState, action: Action): GameState {
         ),
       };
     }
+
     case "NEXT_SCENARIO": {
       const next = state.scenario + 1;
       if (next >= 3) return { ...state, screen: "phase-result" };
@@ -65,6 +67,7 @@ function reducer(state: GameState, action: Action): GameState {
         selectedChoice: null,
       };
     }
+
     case "NEXT_PHASE": {
       const next = state.phase + 1;
       if (next >= N) return { ...state, screen: "final" };
@@ -77,8 +80,10 @@ function reducer(state: GameState, action: Action): GameState {
         screen: "phase-intro",
       };
     }
+
     case "RESTART":
       return makeInitial();
+
     default:
       return state;
   }
@@ -86,6 +91,7 @@ function reducer(state: GameState, action: Action): GameState {
 
 export function useGame() {
   const [state, dispatch] = useReducer(reducer, undefined, makeInitial);
+
   const phases = PHASES_DATA;
   const currentPhase = phases[state.phase] ?? null;
   const currentScenario = currentPhase?.scenarios[state.scenario] ?? null;
@@ -104,6 +110,11 @@ export function useGame() {
     [maxScore],
   );
 
+  // ✅ CORREÇÃO: goToGame muda a tela para 'game' ao sair do phase-intro
+  const goToGame = useCallback(
+    () => dispatch({ type: "SET_SCREEN", screen: "game" }),
+    [],
+  );
   const startGame = useCallback(() => {
     dispatch({ type: "RESTART" });
     dispatch({ type: "SET_SCREEN", screen: "phase-intro" });
@@ -142,6 +153,7 @@ export function useGame() {
     maxScore,
     finalClassification: getClassification(state.score),
     startGame,
+    goToGame,
     selectChoice,
     nextScenario,
     nextPhase,
