@@ -1,11 +1,12 @@
 "use client";
-
-import { useReducer, useCallback, useEffect, useState } from "react";
-import type { GameState, Phase, Choice, Screen } from "@/types/game";
+import { useReducer, useCallback } from "react";
+import type { GameState, Choice, Screen } from "@/types/game";
 import { PHASES_DATA } from "@/data/phases";
 import { saveScore } from "@/lib/supabase";
 
-const initialState: GameState = {
+const N = PHASES_DATA.length; // automático — funciona com qualquer número de fases
+
+const makeInitial = (): GameState => ({
   screen: "welcome",
   phase: 0,
   scenario: 0,
@@ -13,12 +14,12 @@ const initialState: GameState = {
   lives: 3,
   answered: false,
   selectedChoice: null,
-  phaseScores: [0, 0, 0, 0, 0],
+  phaseScores: Array(N).fill(0),
   correct: 0,
   partial: 0,
   wrong: 0,
-  phaseBreakdown: [[], [], [], [], []],
-};
+  phaseBreakdown: Array.from({ length: N }, () => []),
+});
 
 type Action =
   | { type: "SET_SCREEN"; screen: Screen }
@@ -30,26 +31,12 @@ type Action =
 function reducer(state: GameState, action: Action): GameState {
   switch (action.type) {
     case "SET_SCREEN":
-      if (action.screen === "game") {
-        return {
-          ...state,
-          screen: "game",
-          answered: false,
-          selectedChoice: null,
-        };
-      }
       return { ...state, screen: action.screen };
-
     case "SELECT_CHOICE": {
       if (state.answered) return state;
       const { choice } = action;
       const newPhaseScores = [...state.phaseScores];
       newPhaseScores[state.phase] += choice.points;
-      const newBreakdown = state.phaseBreakdown.map((d, i) =>
-        i === state.phase
-          ? [...d, { pts: choice.points, type: choice.type }]
-          : d,
-      );
       return {
         ...state,
         answered: true,
@@ -61,72 +48,68 @@ function reducer(state: GameState, action: Action): GameState {
         correct: choice.type === "correct" ? state.correct + 1 : state.correct,
         partial: choice.type === "partial" ? state.partial + 1 : state.partial,
         wrong: choice.type === "wrong" ? state.wrong + 1 : state.wrong,
-        phaseBreakdown: newBreakdown,
+        phaseBreakdown: state.phaseBreakdown.map((d, i) =>
+          i === state.phase
+            ? [...d, { pts: choice.points, type: choice.type }]
+            : d,
+        ),
       };
     }
-
     case "NEXT_SCENARIO": {
-      const nextScenario = state.scenario + 1;
-      if (nextScenario >= 3) return { ...state, screen: "phase-result" };
+      const next = state.scenario + 1;
+      if (next >= 3) return { ...state, screen: "phase-result" };
       return {
         ...state,
-        scenario: nextScenario,
+        scenario: next,
         answered: false,
         selectedChoice: null,
       };
     }
-
     case "NEXT_PHASE": {
-      const nextPhase = state.phase + 1;
-      if (nextPhase >= 5) return { ...state, screen: "final" };
+      const next = state.phase + 1;
+      if (next >= N) return { ...state, screen: "final" };
       return {
         ...state,
-        phase: nextPhase,
+        phase: next,
         scenario: 0,
         answered: false,
         selectedChoice: null,
         screen: "phase-intro",
       };
     }
-
     case "RESTART":
-      return { ...initialState };
-
+      return makeInitial();
     default:
       return state;
   }
 }
 
 export function useGame() {
-  const [state, dispatch] = useReducer(reducer, initialState);
-
-  // Phases come from local data — no API call needed
+  const [state, dispatch] = useReducer(reducer, undefined, makeInitial);
   const phases = PHASES_DATA;
   const currentPhase = phases[state.phase] ?? null;
   const currentScenario = currentPhase?.scenarios[state.scenario] ?? null;
   const globalProgress = state.phase * 3 + state.scenario;
+  const maxScore = N * 300;
 
-  const getClassification = useCallback((score: number) => {
-    const pct = score / 1500;
-    if (pct >= 0.93) return { title: "Mestre da Comunicação", trophy: "🏆" };
-    if (pct >= 0.73) return { title: "Comunicador Assertivo", trophy: "🥇" };
-    if (pct >= 0.47)
-      return { title: "Comunicador em Crescimento", trophy: "🥈" };
-    return { title: "Aprendiz em Comunicação", trophy: "🌱" };
-  }, []);
-
-  const finalClassification = getClassification(state.score);
+  const getClassification = useCallback(
+    (score: number) => {
+      const pct = score / maxScore;
+      if (pct >= 0.93) return { title: "Mestre da Comunicação", trophy: "🏆" };
+      if (pct >= 0.73) return { title: "Comunicador Assertivo", trophy: "🥇" };
+      if (pct >= 0.47)
+        return { title: "Comunicador em Crescimento", trophy: "🥈" };
+      return { title: "Aprendiz em Comunicação", trophy: "🌱" };
+    },
+    [maxScore],
+  );
 
   const startGame = useCallback(() => {
-    if (state.screen === "welcome") {
-      dispatch({ type: "RESTART" });
-      dispatch({ type: "SET_SCREEN", screen: "phase-intro" });
-    } else {
-      dispatch({ type: "SET_SCREEN", screen: "game" });
-    }
-  }, [state.screen]);
+    dispatch({ type: "RESTART" });
+    dispatch({ type: "SET_SCREEN", screen: "phase-intro" });
+  }, []);
   const selectChoice = useCallback(
-    (choice: Choice) => dispatch({ type: "SELECT_CHOICE", choice }),
+    (c: Choice) => dispatch({ type: "SELECT_CHOICE", choice: c }),
     [],
   );
   const nextScenario = useCallback(
@@ -136,7 +119,6 @@ export function useGame() {
   const nextPhase = useCallback(() => dispatch({ type: "NEXT_PHASE" }), []);
   const restart = useCallback(() => dispatch({ type: "RESTART" }), []);
 
-  // Save score directly to Supabase — same as Roesel
   const submitScore = useCallback(
     async (playerName?: string) => {
       return await saveScore({
@@ -157,7 +139,8 @@ export function useGame() {
     currentPhase,
     currentScenario,
     globalProgress,
-    finalClassification,
+    maxScore,
+    finalClassification: getClassification(state.score),
     startGame,
     selectChoice,
     nextScenario,
