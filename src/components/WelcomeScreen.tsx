@@ -17,16 +17,18 @@ export function WelcomeScreen({ onStart }: Props) {
       <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-amber-400 text-4xl shadow-[0_0_0_14px_rgba(196,135,58,0.15),0_0_0_28px_rgba(196,135,58,0.07)] animate-pulse">
         💬
       </div>
+
       <span className="mb-3 rounded-full border border-amber-500/30 bg-amber-500/15 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-amber-400">
         Jogo Educativo
       </span>
-      <h1 className="mb-2 text-5xl font-black leading-tight">
-        Assertivo!
+
+      <h1 className="mb-1 text-5xl font-black leading-tight">
+        Comunicação
         <br />
-        <span className="text-amber-400">O Jogo</span>
+        <span className="text-amber-400">Assertiva</span>
       </h1>
-      <p className="mb-8 max-w-xs text-sm text-white/50">
-        Pratique comunicação assertiva em situações reais do dia a dia
+      <p className="mb-8 text-lg font-bold text-white/50 tracking-wide">
+        O Jogo
       </p>
 
       <div className="mb-8 grid w-full max-w-sm grid-cols-4 gap-2">
@@ -50,7 +52,7 @@ export function WelcomeScreen({ onStart }: Props) {
         ))}
       </div>
 
-      <div className="mb-4 w-full max-w-sm rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-xs text-white/50 text-left">
+      <div className="mb-6 w-full max-w-sm rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-xs text-white/50 text-left">
         🔥 <span className="font-bold text-white/70">Streak:</span> acerte 3
         seguidas e a próxima vale{" "}
         <span className="text-amber-400 font-bold">150 pts!</span>
@@ -68,12 +70,12 @@ export function WelcomeScreen({ onStart }: Props) {
           onKeyDown={(e) =>
             e.key === "Enter" && isValid && onStart(name.trim())
           }
-          className="mb-3 w-full rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-base text-white placeholder-white/30 outline-none focus:border-amber-500 transition"
+          className="mb-3 w-full rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-base text-white placeholder-white/30 outline-none focus:border-amber-500 focus:bg-white/15 transition"
         />
         <button
           onClick={() => isValid && onStart(name.trim())}
           disabled={!isValid}
-          className="w-full rounded-full bg-gradient-to-r from-amber-500 to-amber-400 px-12 py-4 text-lg font-black text-white shadow-[0_8px_32px_rgba(196,135,58,0.45)] transition-all hover:-translate-y-1 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none"
+          className="w-full rounded-full bg-gradient-to-r from-amber-500 to-amber-400 px-12 py-4 text-lg font-black text-white shadow-[0_8px_32px_rgba(196,135,58,0.45)] transition-all hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(196,135,58,0.6)] active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none"
         >
           ▶ Jogar Agora
         </button>
