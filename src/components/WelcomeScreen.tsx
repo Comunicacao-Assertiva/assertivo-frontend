@@ -4,12 +4,11 @@ import { PHASES_DATA } from "@/data/phases";
 
 interface SavedGame {
   playerName: string;
-  phase: number;
-  scenario: number;
+  topicIdx: number;
+  subIdx: number;
   score: number;
   lives: number;
 }
-
 interface Props {
   onStart: (name: string) => void;
   onContinue: () => void;
@@ -21,21 +20,16 @@ export function WelcomeScreen({ onStart, onContinue, savedGame }: Props) {
   const [showNew, setShowNew] = useState(!savedGame);
   const isValid = name.trim().length >= 3;
   const N = PHASES_DATA.length;
-  const total = N * 5;
-
-  const phaseTitle = savedGame ? PHASES_DATA[savedGame.phase]?.title : "";
+  const savedTopic = savedGame ? PHASES_DATA[savedGame.topicIdx]?.title : "";
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-5 py-10 text-center">
-      {/* Ícone */}
       <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-amber-400 text-4xl shadow-[0_0_0_14px_rgba(196,135,58,0.15),0_0_0_28px_rgba(196,135,58,0.07)] animate-pulse">
         💬
       </div>
-
       <span className="mb-3 rounded-full border border-amber-500/30 bg-amber-500/15 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-amber-400">
         Jogo Educativo
       </span>
-
       <h1 className="mb-1 text-5xl font-black leading-tight">
         Comunicação
         <br />
@@ -45,11 +39,9 @@ export function WelcomeScreen({ onStart, onContinue, savedGame }: Props) {
         O Jogo
       </p>
 
-      {/* Stats */}
-      <div className="mb-6 grid w-full max-w-sm grid-cols-4 gap-2">
+      <div className="mb-6 grid w-full max-w-sm grid-cols-3 gap-2">
         {[
-          { n: String(N), l: "Fases" },
-          { n: String(total), l: "Questões" },
+          { n: String(N), l: "Tópicos" },
           { n: "❤️❤️❤️", l: "Vidas" },
           { n: "🔥", l: "Streak" },
         ].map(({ n, l }) => (
@@ -67,17 +59,18 @@ export function WelcomeScreen({ onStart, onContinue, savedGame }: Props) {
         ))}
       </div>
 
-      {/* Regras rápidas */}
       <div className="mb-6 w-full max-w-sm rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-xs text-white/50 text-left">
-        🔥 <span className="font-bold text-white/70">Streak:</span> acerte 3
-        seguidas e a próxima vale{" "}
+        🔥 <span className="font-bold text-white/70">Streak:</span> 3 acertos
+        seguidos = próxima vale{" "}
         <span className="text-amber-400 font-bold">150 pts!</span>
         <br />
         ❤️ <span className="font-bold text-white/70">Vidas:</span> perde uma a
         cada resposta errada. Game over sem vidas!
+        <br />
+        💡 <span className="font-bold text-white/70">Dicas:</span> cada módulo
+        começa com uma técnica de comunicação.
       </div>
 
-      {/* ── CONTINUAR jogo salvo ── */}
       {savedGame && !showNew && (
         <div className="w-full max-w-sm mb-4">
           <div className="mb-4 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-left">
@@ -87,9 +80,9 @@ export function WelcomeScreen({ onStart, onContinue, savedGame }: Props) {
             <p className="font-black text-white text-base">
               {savedGame.playerName}
             </p>
-            <div className="flex items-center gap-3 mt-2 text-sm text-white/60">
+            <div className="flex items-center gap-3 mt-2 text-sm text-white/60 flex-wrap">
               <span>
-                📍 Fase {savedGame.phase + 1} — {phaseTitle}
+                📍 Tópico {savedGame.topicIdx + 1} — {savedTopic}
               </span>
               <span>·</span>
               <span>⭐ {savedGame.score} pts</span>
@@ -98,9 +91,7 @@ export function WelcomeScreen({ onStart, onContinue, savedGame }: Props) {
                 {Array.from({ length: 3 }, (_, i) => (
                   <span
                     key={i}
-                    className={
-                      i < savedGame.lives ? "opacity-100" : "opacity-25"
-                    }
+                    className={i < savedGame.lives ? "" : "opacity-25"}
                   >
                     ❤️
                   </span>
@@ -108,14 +99,12 @@ export function WelcomeScreen({ onStart, onContinue, savedGame }: Props) {
               </span>
             </div>
           </div>
-
           <button
             onClick={onContinue}
             className="w-full mb-3 rounded-full bg-gradient-to-r from-amber-500 to-amber-400 py-4 text-lg font-black text-white shadow-[0_8px_32px_rgba(196,135,58,0.45)] transition-all hover:-translate-y-1 active:scale-95"
           >
             ▶ Continuar de onde parei
           </button>
-
           <button
             onClick={() => setShowNew(true)}
             className="w-full rounded-full border border-white/15 py-3 text-sm font-bold text-white/50 transition hover:border-white/30 hover:text-white"
@@ -125,7 +114,6 @@ export function WelcomeScreen({ onStart, onContinue, savedGame }: Props) {
         </div>
       )}
 
-      {/* ── NOVO jogo ── */}
       {(!savedGame || showNew) && (
         <div className="w-full max-w-sm">
           {showNew && savedGame && (
@@ -144,7 +132,7 @@ export function WelcomeScreen({ onStart, onContinue, savedGame }: Props) {
             onKeyDown={(e) =>
               e.key === "Enter" && isValid && onStart(name.trim())
             }
-            className="mb-3 w-full rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-base text-white placeholder-white/30 outline-none focus:border-amber-500 focus:bg-white/15 transition"
+            className="mb-3 w-full rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-base text-white placeholder-white/30 outline-none focus:border-amber-500 transition"
           />
           <button
             onClick={() => isValid && onStart(name.trim())}

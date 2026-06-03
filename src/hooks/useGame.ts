@@ -4,85 +4,89 @@ import type { GameState, Choice, Screen } from "@/types/game";
 import { PHASES_DATA } from "@/data/phases";
 import { saveScore } from "@/lib/supabase";
 
-const N = PHASES_DATA.length;
-const PER_PHASE = 5;
-const SAVE_KEY = "assertivo_save";
+const TOPICS = PHASES_DATA;
+const N_TOPICS = TOPICS.length;
+const N_SUBS = 3;
+const SAVE_KEY = "assertivo_save_v2";
 
 const makeInitial = (): GameState => ({
   screen: "welcome",
   playerName: "",
-  phase: 0,
-  scenario: 0,
+  topicIdx: 0,
+  subIdx: 0,
+  itemIdx: 0,
   score: 0,
   lives: 3,
   streak: 0,
   maxStreak: 0,
   answered: false,
   selectedChoice: null,
-  phaseScores: Array(N).fill(0),
+  topicScores: Array(N_TOPICS).fill(0),
   correct: 0,
   partial: 0,
   wrong: 0,
-  phaseBreakdown: Array.from({ length: N }, () => []),
+  breakdown: Array.from({ length: N_TOPICS }, () =>
+    Array.from({ length: N_SUBS }, () => []),
+  ),
 });
 
-// ── O que salvar no localStorage ──
 interface SavedData {
   playerName: string;
-  phase: number;
-  scenario: number;
+  topicIdx: number;
+  subIdx: number;
+  itemIdx: number;
   score: number;
   lives: number;
   streak: number;
   maxStreak: number;
-  phaseScores: number[];
+  topicScores: number[];
   correct: number;
   partial: number;
   wrong: number;
-  phaseBreakdown: { pts: number }[][];
+  breakdown: { pts: number }[][][];
 }
 
 function loadSaved(): SavedData | null {
   if (typeof window === "undefined") return null;
   try {
-    const raw = localStorage.getItem(SAVE_KEY);
-    return raw ? (JSON.parse(raw) as SavedData) : null;
+    const r = localStorage.getItem(SAVE_KEY);
+    return r ? JSON.parse(r) : null;
   } catch {
     return null;
   }
 }
-
-function writeSave(state: GameState) {
+function writeSave(s: GameState) {
   if (typeof window === "undefined") return;
-  const data: SavedData = {
-    playerName: state.playerName,
-    phase: state.phase,
-    scenario: state.scenario,
-    score: state.score,
-    lives: state.lives,
-    streak: state.streak,
-    maxStreak: state.maxStreak,
-    phaseScores: state.phaseScores,
-    correct: state.correct,
-    partial: state.partial,
-    wrong: state.wrong,
-    phaseBreakdown: state.phaseBreakdown,
-  };
-  localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+  localStorage.setItem(
+    SAVE_KEY,
+    JSON.stringify({
+      playerName: s.playerName,
+      topicIdx: s.topicIdx,
+      subIdx: s.subIdx,
+      itemIdx: s.itemIdx,
+      score: s.score,
+      lives: s.lives,
+      streak: s.streak,
+      maxStreak: s.maxStreak,
+      topicScores: s.topicScores,
+      correct: s.correct,
+      partial: s.partial,
+      wrong: s.wrong,
+      breakdown: s.breakdown,
+    }),
+  );
 }
-
 function clearSave() {
   if (typeof window === "undefined") return;
   localStorage.removeItem(SAVE_KEY);
 }
 
-// ── Reducer ──
 type Action =
   | { type: "SET_SCREEN"; screen: Screen }
   | { type: "SET_NAME"; name: string }
   | { type: "SELECT_CHOICE"; choice: Choice }
-  | { type: "NEXT_SCENARIO" }
-  | { type: "NEXT_PHASE" }
+  | { type: "NEXT_ITEM" }
+  | { type: "NEXT_SUB" }
   | { type: "LOAD_SAVE"; data: SavedData }
   | { type: "RESTART" };
 
@@ -97,7 +101,7 @@ function reducer(state: GameState, action: Action): GameState {
       return {
         ...makeInitial(),
         ...action.data,
-        screen: "game", // sempre começa no jogo
+        screen: "game",
         answered: false,
         selectedChoice: null,
       };
@@ -111,8 +115,15 @@ function reducer(state: GameState, action: Action): GameState {
       const pts = isCorrect ? (onStreak ? 150 : 100) : choice.points;
       const newStreak = isCorrect ? state.streak + 1 : 0;
       const newLives = isWrong ? Math.max(0, state.lives - 1) : state.lives;
-      const newPhaseScores = [...state.phaseScores];
-      newPhaseScores[state.phase] += pts;
+      const newTopicScores = [...state.topicScores];
+      newTopicScores[state.topicIdx] += pts;
+      const newBreakdown = state.breakdown.map((topic, ti) =>
+        topic.map((sub, si) =>
+          ti === state.topicIdx && si === state.subIdx
+            ? [...sub, { pts }]
+            : sub,
+        ),
+      );
       return {
         ...state,
         answered: true,
@@ -121,39 +132,59 @@ function reducer(state: GameState, action: Action): GameState {
         lives: newLives,
         streak: newStreak,
         maxStreak: Math.max(state.maxStreak, newStreak),
-        phaseScores: newPhaseScores,
+        topicScores: newTopicScores,
         correct: isCorrect ? state.correct + 1 : state.correct,
         partial: choice.type === "partial" ? state.partial + 1 : state.partial,
         wrong: isWrong ? state.wrong + 1 : state.wrong,
-        phaseBreakdown: state.phaseBreakdown.map((d, i) =>
-          i === state.phase ? [...d, { pts }] : d,
-        ),
+        breakdown: newBreakdown,
       };
     }
 
-    case "NEXT_SCENARIO": {
+    case "NEXT_ITEM": {
       if (state.lives <= 0) return { ...state, screen: "game-over" };
-      const next = state.scenario + 1;
-      if (next >= PER_PHASE) return { ...state, screen: "phase-result" };
+      const currentSub = TOPICS[state.topicIdx].subPhases[state.subIdx];
+      const totalItems = currentSub.items.length;
+      const nextItemIdx = state.itemIdx + 1;
+      if (nextItemIdx >= totalItems)
+        return {
+          ...state,
+          screen: "sub-result",
+          answered: false,
+          selectedChoice: null,
+        };
       return {
         ...state,
-        scenario: next,
+        itemIdx: nextItemIdx,
         answered: false,
         selectedChoice: null,
       };
     }
 
-    case "NEXT_PHASE": {
-      const next = state.phase + 1;
-      if (next >= N) return { ...state, screen: "final" };
-      return {
-        ...state,
-        phase: next,
-        scenario: 0,
-        answered: false,
-        selectedChoice: null,
-        screen: "phase-intro",
-      };
+    case "NEXT_SUB": {
+      const nextSubIdx = state.subIdx + 1;
+      if (nextSubIdx < N_SUBS) {
+        return {
+          ...state,
+          subIdx: nextSubIdx,
+          itemIdx: 0,
+          answered: false,
+          selectedChoice: null,
+          screen: "phase-intro",
+        };
+      }
+      const nextTopicIdx = state.topicIdx + 1;
+      if (nextTopicIdx < N_TOPICS) {
+        return {
+          ...state,
+          topicIdx: nextTopicIdx,
+          subIdx: 0,
+          itemIdx: 0,
+          answered: false,
+          selectedChoice: null,
+          screen: "phase-intro",
+        };
+      }
+      return { ...state, screen: "final" };
     }
 
     case "RESTART":
@@ -163,17 +194,14 @@ function reducer(state: GameState, action: Action): GameState {
   }
 }
 
-// ── Hook ──
 export function useGame() {
   const [state, dispatch] = useReducer(reducer, undefined, makeInitial);
   const [savedGame, setSavedGame] = useState<SavedData | null>(null);
 
-  // Carrega save ao montar
   useEffect(() => {
     setSavedGame(loadSaved());
   }, []);
 
-  // Auto-salva sempre que o estado muda (exceto welcome/final/game-over)
   useEffect(() => {
     if (state.screen === "welcome") return;
     if (state.screen === "final" || state.screen === "game-over") {
@@ -184,11 +212,31 @@ export function useGame() {
     if (state.playerName) writeSave(state);
   }, [state]);
 
-  const phases = PHASES_DATA;
-  const currentPhase = phases[state.phase] ?? null;
-  const currentScenario = currentPhase?.scenarios[state.scenario] ?? null;
-  const globalProgress = state.phase * PER_PHASE + state.scenario;
-  const maxScore = N * PER_PHASE * 100;
+  const currentTopic = TOPICS[state.topicIdx] ?? null;
+  const currentSub = currentTopic?.subPhases[state.subIdx] ?? null;
+  const currentItem = currentSub?.items[state.itemIdx] ?? null;
+  const maxScore = TOPICS.reduce(
+    (acc, t) =>
+      acc +
+      t.subPhases.reduce(
+        (a, s) => a + s.items.filter((i) => i.type === "choice").length * 100,
+        0,
+      ),
+    0,
+  );
+  const globalProgress =
+    TOPICS.slice(0, state.topicIdx).reduce(
+      (acc, t) => acc + t.subPhases.reduce((a, s) => a + s.items.length, 0),
+      0,
+    ) +
+    (currentTopic?.subPhases
+      .slice(0, state.subIdx)
+      .reduce((a, s) => a + s.items.length, 0) ?? 0) +
+    state.itemIdx;
+  const totalItems = TOPICS.reduce(
+    (acc, t) => acc + t.subPhases.reduce((a, s) => a + s.items.length, 0),
+    0,
+  );
 
   const getClass = useCallback(
     (score: number) => {
@@ -209,13 +257,11 @@ export function useGame() {
     dispatch({ type: "SET_NAME", name });
     dispatch({ type: "SET_SCREEN", screen: "phase-intro" });
   }, []);
-
   const continueGame = useCallback(() => {
     const saved = loadSaved();
     if (!saved) return;
     dispatch({ type: "LOAD_SAVE", data: saved });
   }, []);
-
   const goToGame = useCallback(
     () => dispatch({ type: "SET_SCREEN", screen: "game" }),
     [],
@@ -224,11 +270,8 @@ export function useGame() {
     (c: Choice) => dispatch({ type: "SELECT_CHOICE", choice: c }),
     [],
   );
-  const nextScenario = useCallback(
-    () => dispatch({ type: "NEXT_SCENARIO" }),
-    [],
-  );
-  const nextPhase = useCallback(() => dispatch({ type: "NEXT_PHASE" }), []);
+  const nextItem = useCallback(() => dispatch({ type: "NEXT_ITEM" }), []);
+  const nextSub = useCallback(() => dispatch({ type: "NEXT_SUB" }), []);
   const restart = useCallback(() => {
     clearSave();
     setSavedGame(null);
@@ -240,7 +283,7 @@ export function useGame() {
       {
         player_name: state.playerName,
         total_score: state.score,
-        phase_scores: state.phaseScores,
+        phase_scores: state.topicScores,
         correct_count: state.correct,
         partial_count: state.partial,
         wrong_count: state.wrong,
@@ -251,20 +294,20 @@ export function useGame() {
 
   return {
     state,
-    phases,
-    currentPhase,
-    currentScenario,
+    currentTopic,
+    currentSub,
+    currentItem,
     globalProgress,
+    totalItems,
     maxScore,
-    perPhase: PER_PHASE,
     savedGame,
     finalClassification: getClass(state.score),
     startGame,
     continueGame,
     goToGame,
     selectChoice,
-    nextScenario,
-    nextPhase,
+    nextItem,
+    nextSub,
     restart,
     submitScore,
   };

@@ -3,7 +3,7 @@ export type Screen =
   | "welcome"
   | "phase-intro"
   | "game"
-  | "phase-result"
+  | "sub-result"
   | "game-over"
   | "final"
   | "leaderboard";
@@ -15,40 +15,66 @@ export interface Choice {
   type: ChoiceType;
   feedback: string;
 }
-export interface Scenario {
+
+// Item do tipo dica (card educativo)
+export interface TipItem {
   id: string;
+  type: "tip";
+  icon: string;
+  title: string;
+  content: string;
+}
+
+// Item do tipo pergunta
+export interface ChoiceItem {
+  id: string;
+  type: "choice";
   tag: string;
   question: string;
   choices: Choice[];
 }
-export interface Phase {
+
+export type SubItem = TipItem | ChoiceItem;
+
+export interface SubPhase {
+  id: string;
+  title: string;
+  description: string;
+  items: SubItem[]; // [tip, q, q, q]
+}
+
+export interface Topic {
   id: number;
   number: number;
   title: string;
+  icon: string;
   description: string;
-  tip: string;
-  scenarios: Scenario[];
+  subPhases: SubPhase[];
 }
+
 export interface PhaseBreakdownEntry {
   pts: number;
 }
+
 export interface GameState {
   screen: Screen;
   playerName: string;
-  phase: number;
-  scenario: number;
+  topicIdx: number;
+  subIdx: number;
+  itemIdx: number;
   score: number;
   lives: number;
   streak: number;
   maxStreak: number;
   answered: boolean;
   selectedChoice: Choice | null;
-  phaseScores: number[];
+  topicScores: number[];
   correct: number;
   partial: number;
   wrong: number;
-  phaseBreakdown: PhaseBreakdownEntry[][];
+  breakdown: PhaseBreakdownEntry[][][];
 }
+
 export interface ScoreSubmit {
   player_name?: string;
   total_score: number;

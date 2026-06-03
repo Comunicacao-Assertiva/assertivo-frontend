@@ -10,25 +10,23 @@ import { GameOver } from "./GameOver";
 export function GameWrapper() {
   const {
     state,
-    phases,
-    currentPhase,
-    currentScenario,
+    currentTopic,
+    currentSub,
+    currentItem,
     globalProgress,
+    totalItems,
     maxScore,
-    perPhase,
     savedGame,
     finalClassification,
     startGame,
     continueGame,
     goToGame,
     selectChoice,
-    nextScenario,
-    nextPhase,
+    nextItem,
+    nextSub,
     restart,
     submitScore,
   } = useGame();
-
-  const totalScenarios = phases.length * perPhase;
 
   return (
     <>
@@ -47,28 +45,35 @@ export function GameWrapper() {
         />
       )}
 
-      {state.screen === "phase-intro" && currentPhase && (
-        <PhaseIntro phase={currentPhase} onStart={goToGame} />
-      )}
-
-      {state.screen === "game" && currentPhase && currentScenario && (
-        <GameScreen
-          state={state}
-          phase={currentPhase}
-          scenario={currentScenario}
-          globalProgress={globalProgress}
-          totalScenarios={totalScenarios}
-          onSelectChoice={selectChoice}
-          onNext={nextScenario}
+      {state.screen === "phase-intro" && currentTopic && currentSub && (
+        <PhaseIntro
+          topic={currentTopic}
+          sub={currentSub}
+          isNewTopic={state.subIdx === 0}
+          onStart={goToGame}
         />
       )}
 
-      {state.screen === "phase-result" && currentPhase && (
-        <PhaseResult
-          phase={currentPhase}
+      {state.screen === "game" && currentTopic && currentSub && currentItem && (
+        <GameScreen
           state={state}
-          onNext={nextPhase}
-          isLast={state.phase === phases.length - 1}
+          topic={currentTopic}
+          sub={currentSub}
+          item={currentItem}
+          globalProgress={globalProgress}
+          totalItems={totalItems}
+          onSelectChoice={selectChoice}
+          onNextItem={nextItem}
+        />
+      )}
+
+      {state.screen === "sub-result" && currentTopic && currentSub && (
+        <PhaseResult
+          topic={currentTopic}
+          sub={currentSub}
+          state={state}
+          subIdx={state.subIdx}
+          onNext={nextSub}
         />
       )}
 
@@ -79,7 +84,7 @@ export function GameWrapper() {
       {(state.screen === "final" || state.screen === "leaderboard") && (
         <FinalResult
           state={state}
-          phases={phases}
+          topics={currentTopic ? [currentTopic] : []}
           maxScore={maxScore}
           classification={finalClassification}
           onRestart={restart}
