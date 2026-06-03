@@ -1,11 +1,12 @@
 "use client";
-import { useReducer, useCallback } from "react";
+import { useReducer, useCallback, useEffect, useState } from "react";
 import type { GameState, Choice, Screen } from "@/types/game";
 import { PHASES_DATA } from "@/data/phases";
 import { saveScore } from "@/lib/supabase";
 
 const N = PHASES_DATA.length;
 const PER_PHASE = 5;
+const SAVE_KEY = "assertivo_save";
 
 const makeInitial = (): GameState => ({
   screen: "welcome",
@@ -25,12 +26,64 @@ const makeInitial = (): GameState => ({
   phaseBreakdown: Array.from({ length: N }, () => []),
 });
 
+// ── O que salvar no localStorage ──
+interface SavedData {
+  playerName: string;
+  phase: number;
+  scenario: number;
+  score: number;
+  lives: number;
+  streak: number;
+  maxStreak: number;
+  phaseScores: number[];
+  correct: number;
+  partial: number;
+  wrong: number;
+  phaseBreakdown: { pts: number }[][];
+}
+
+function loadSaved(): SavedData | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    return raw ? (JSON.parse(raw) as SavedData) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeSave(state: GameState) {
+  if (typeof window === "undefined") return;
+  const data: SavedData = {
+    playerName: state.playerName,
+    phase: state.phase,
+    scenario: state.scenario,
+    score: state.score,
+    lives: state.lives,
+    streak: state.streak,
+    maxStreak: state.maxStreak,
+    phaseScores: state.phaseScores,
+    correct: state.correct,
+    partial: state.partial,
+    wrong: state.wrong,
+    phaseBreakdown: state.phaseBreakdown,
+  };
+  localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+}
+
+function clearSave() {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(SAVE_KEY);
+}
+
+// ── Reducer ──
 type Action =
   | { type: "SET_SCREEN"; screen: Screen }
   | { type: "SET_NAME"; name: string }
   | { type: "SELECT_CHOICE"; choice: Choice }
   | { type: "NEXT_SCENARIO" }
   | { type: "NEXT_PHASE" }
+  | { type: "LOAD_SAVE"; data: SavedData }
   | { type: "RESTART" };
 
 function reducer(state: GameState, action: Action): GameState {
@@ -40,21 +93,26 @@ function reducer(state: GameState, action: Action): GameState {
     case "SET_NAME":
       return { ...state, playerName: action.name };
 
+    case "LOAD_SAVE":
+      return {
+        ...makeInitial(),
+        ...action.data,
+        screen: "game", // sempre começa no jogo
+        answered: false,
+        selectedChoice: null,
+      };
+
     case "SELECT_CHOICE": {
       if (state.answered) return state;
       const { choice } = action;
       const isCorrect = choice.type === "correct";
       const isWrong = choice.type === "wrong";
-
-      // Streak bonus: 2 corretas seguidas → próxima correta vale 150
       const onStreak = state.streak >= 2;
       const pts = isCorrect ? (onStreak ? 150 : 100) : choice.points;
       const newStreak = isCorrect ? state.streak + 1 : 0;
       const newLives = isWrong ? Math.max(0, state.lives - 1) : state.lives;
-
       const newPhaseScores = [...state.phaseScores];
       newPhaseScores[state.phase] += pts;
-
       return {
         ...state,
         answered: true,
@@ -74,7 +132,6 @@ function reducer(state: GameState, action: Action): GameState {
     }
 
     case "NEXT_SCENARIO": {
-      // Sem vidas → game over
       if (state.lives <= 0) return { ...state, screen: "game-over" };
       const next = state.scenario + 1;
       if (next >= PER_PHASE) return { ...state, screen: "phase-result" };
@@ -106,8 +163,26 @@ function reducer(state: GameState, action: Action): GameState {
   }
 }
 
+// ── Hook ──
 export function useGame() {
   const [state, dispatch] = useReducer(reducer, undefined, makeInitial);
+  const [savedGame, setSavedGame] = useState<SavedData | null>(null);
+
+  // Carrega save ao montar
+  useEffect(() => {
+    setSavedGame(loadSaved());
+  }, []);
+
+  // Auto-salva sempre que o estado muda (exceto welcome/final/game-over)
+  useEffect(() => {
+    if (state.screen === "welcome") return;
+    if (state.screen === "final" || state.screen === "game-over") {
+      clearSave();
+      setSavedGame(null);
+      return;
+    }
+    if (state.playerName) writeSave(state);
+  }, [state]);
 
   const phases = PHASES_DATA;
   const currentPhase = phases[state.phase] ?? null;
@@ -128,10 +203,19 @@ export function useGame() {
   );
 
   const startGame = useCallback((name: string) => {
+    clearSave();
+    setSavedGame(null);
     dispatch({ type: "RESTART" });
     dispatch({ type: "SET_NAME", name });
     dispatch({ type: "SET_SCREEN", screen: "phase-intro" });
   }, []);
+
+  const continueGame = useCallback(() => {
+    const saved = loadSaved();
+    if (!saved) return;
+    dispatch({ type: "LOAD_SAVE", data: saved });
+  }, []);
+
   const goToGame = useCallback(
     () => dispatch({ type: "SET_SCREEN", screen: "game" }),
     [],
@@ -145,7 +229,11 @@ export function useGame() {
     [],
   );
   const nextPhase = useCallback(() => dispatch({ type: "NEXT_PHASE" }), []);
-  const restart = useCallback(() => dispatch({ type: "RESTART" }), []);
+  const restart = useCallback(() => {
+    clearSave();
+    setSavedGame(null);
+    dispatch({ type: "RESTART" });
+  }, []);
 
   const submitScore = useCallback(async () => {
     return await saveScore(
@@ -169,8 +257,10 @@ export function useGame() {
     globalProgress,
     maxScore,
     perPhase: PER_PHASE,
+    savedGame,
     finalClassification: getClass(state.score),
     startGame,
+    continueGame,
     goToGame,
     selectChoice,
     nextScenario,

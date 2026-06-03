@@ -16,8 +16,10 @@ export function GameWrapper() {
     globalProgress,
     maxScore,
     perPhase,
+    savedGame,
     finalClassification,
     startGame,
+    continueGame,
     goToGame,
     selectChoice,
     nextScenario,
@@ -35,10 +37,15 @@ export function GameWrapper() {
         @keyframes flyUp{0%{opacity:1;transform:translate(-50%,-50%) scale(.8)}50%{opacity:1;transform:translate(-50%,-80%) scale(1.3)}100%{opacity:0;transform:translate(-50%,-130%) scale(.9)}}
         @keyframes slideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
         @keyframes pop{from{opacity:0;transform:translateX(-50%) scale(.85)}to{opacity:1;transform:translateX(-50%) scale(1)}}
-        @keyframes heartPop{0%{transform:scale(1)}50%{transform:scale(1.4)}100%{transform:scale(1)}}
       `}</style>
 
-      {state.screen === "welcome" && <WelcomeScreen onStart={startGame} />}
+      {state.screen === "welcome" && (
+        <WelcomeScreen
+          onStart={startGame}
+          onContinue={continueGame}
+          savedGame={savedGame}
+        />
+      )}
 
       {state.screen === "phase-intro" && currentPhase && (
         <PhaseIntro phase={currentPhase} onStart={goToGame} />

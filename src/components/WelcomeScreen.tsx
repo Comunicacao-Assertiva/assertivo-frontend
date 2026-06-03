@@ -2,18 +2,32 @@
 import { useState } from "react";
 import { PHASES_DATA } from "@/data/phases";
 
-interface Props {
-  onStart: (name: string) => void;
+interface SavedGame {
+  playerName: string;
+  phase: number;
+  scenario: number;
+  score: number;
+  lives: number;
 }
 
-export function WelcomeScreen({ onStart }: Props) {
+interface Props {
+  onStart: (name: string) => void;
+  onContinue: () => void;
+  savedGame: SavedGame | null;
+}
+
+export function WelcomeScreen({ onStart, onContinue, savedGame }: Props) {
   const [name, setName] = useState("");
+  const [showNew, setShowNew] = useState(!savedGame);
   const isValid = name.trim().length >= 3;
   const N = PHASES_DATA.length;
   const total = N * 5;
 
+  const phaseTitle = savedGame ? PHASES_DATA[savedGame.phase]?.title : "";
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-5 py-10 text-center">
+      {/* Ícone */}
       <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-amber-400 text-4xl shadow-[0_0_0_14px_rgba(196,135,58,0.15),0_0_0_28px_rgba(196,135,58,0.07)] animate-pulse">
         💬
       </div>
@@ -31,7 +45,8 @@ export function WelcomeScreen({ onStart }: Props) {
         O Jogo
       </p>
 
-      <div className="mb-8 grid w-full max-w-sm grid-cols-4 gap-2">
+      {/* Stats */}
+      <div className="mb-6 grid w-full max-w-sm grid-cols-4 gap-2">
         {[
           { n: String(N), l: "Fases" },
           { n: String(total), l: "Questões" },
@@ -52,6 +67,7 @@ export function WelcomeScreen({ onStart }: Props) {
         ))}
       </div>
 
+      {/* Regras rápidas */}
       <div className="mb-6 w-full max-w-sm rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-xs text-white/50 text-left">
         🔥 <span className="font-bold text-white/70">Streak:</span> acerte 3
         seguidas e a próxima vale{" "}
@@ -61,30 +77,89 @@ export function WelcomeScreen({ onStart }: Props) {
         cada resposta errada. Game over sem vidas!
       </div>
 
-      <div className="w-full max-w-sm mb-6">
-        <input
-          type="text"
-          placeholder="Seu nome completo"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          onKeyDown={(e) =>
-            e.key === "Enter" && isValid && onStart(name.trim())
-          }
-          className="mb-3 w-full rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-base text-white placeholder-white/30 outline-none focus:border-amber-500 focus:bg-white/15 transition"
-        />
-        <button
-          onClick={() => isValid && onStart(name.trim())}
-          disabled={!isValid}
-          className="w-full rounded-full bg-gradient-to-r from-amber-500 to-amber-400 px-12 py-4 text-lg font-black text-white shadow-[0_8px_32px_rgba(196,135,58,0.45)] transition-all hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(196,135,58,0.6)] active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none"
-        >
-          ▶ Jogar Agora
-        </button>
-        {name.length > 0 && !isValid && (
-          <p className="mt-2 text-xs text-amber-400/70 text-center">
-            Digite pelo menos 3 caracteres
-          </p>
-        )}
-      </div>
+      {/* ── CONTINUAR jogo salvo ── */}
+      {savedGame && !showNew && (
+        <div className="w-full max-w-sm mb-4">
+          <div className="mb-4 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-left">
+            <p className="text-xs font-bold uppercase tracking-widest text-amber-500 mb-1">
+              Jogo salvo
+            </p>
+            <p className="font-black text-white text-base">
+              {savedGame.playerName}
+            </p>
+            <div className="flex items-center gap-3 mt-2 text-sm text-white/60">
+              <span>
+                📍 Fase {savedGame.phase + 1} — {phaseTitle}
+              </span>
+              <span>·</span>
+              <span>⭐ {savedGame.score} pts</span>
+              <span>·</span>
+              <span>
+                {Array.from({ length: 3 }, (_, i) => (
+                  <span
+                    key={i}
+                    className={
+                      i < savedGame.lives ? "opacity-100" : "opacity-25"
+                    }
+                  >
+                    ❤️
+                  </span>
+                ))}
+              </span>
+            </div>
+          </div>
+
+          <button
+            onClick={onContinue}
+            className="w-full mb-3 rounded-full bg-gradient-to-r from-amber-500 to-amber-400 py-4 text-lg font-black text-white shadow-[0_8px_32px_rgba(196,135,58,0.45)] transition-all hover:-translate-y-1 active:scale-95"
+          >
+            ▶ Continuar de onde parei
+          </button>
+
+          <button
+            onClick={() => setShowNew(true)}
+            className="w-full rounded-full border border-white/15 py-3 text-sm font-bold text-white/50 transition hover:border-white/30 hover:text-white"
+          >
+            Começar novo jogo
+          </button>
+        </div>
+      )}
+
+      {/* ── NOVO jogo ── */}
+      {(!savedGame || showNew) && (
+        <div className="w-full max-w-sm">
+          {showNew && savedGame && (
+            <button
+              onClick={() => setShowNew(false)}
+              className="mb-4 text-xs text-white/40 hover:text-white/70 transition"
+            >
+              ← Voltar para o jogo salvo
+            </button>
+          )}
+          <input
+            type="text"
+            placeholder="Seu nome completo"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) =>
+              e.key === "Enter" && isValid && onStart(name.trim())
+            }
+            className="mb-3 w-full rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-base text-white placeholder-white/30 outline-none focus:border-amber-500 focus:bg-white/15 transition"
+          />
+          <button
+            onClick={() => isValid && onStart(name.trim())}
+            disabled={!isValid}
+            className="w-full rounded-full bg-gradient-to-r from-amber-500 to-amber-400 py-4 text-lg font-black text-white shadow-[0_8px_32px_rgba(196,135,58,0.45)] transition-all hover:-translate-y-1 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none"
+          >
+            ▶ Jogar Agora
+          </button>
+          {name.length > 0 && !isValid && (
+            <p className="mt-2 text-xs text-amber-400/70 text-center">
+              Digite pelo menos 3 caracteres
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
