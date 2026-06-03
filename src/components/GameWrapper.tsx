@@ -13,6 +13,8 @@ export function GameWrapper() {
     currentTopic,
     currentSub,
     currentItem,
+    allItems,
+    loadingQ,
     globalProgress,
     totalItems,
     maxScore,
@@ -35,6 +37,8 @@ export function GameWrapper() {
         @keyframes flyUp{0%{opacity:1;transform:translate(-50%,-50%) scale(.8)}50%{opacity:1;transform:translate(-50%,-80%) scale(1.3)}100%{opacity:0;transform:translate(-50%,-130%) scale(.9)}}
         @keyframes slideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
         @keyframes pop{from{opacity:0;transform:translateX(-50%) scale(.85)}to{opacity:1;transform:translateX(-50%) scale(1)}}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
       `}</style>
 
       {state.screen === "welcome" && (
@@ -45,27 +49,62 @@ export function GameWrapper() {
         />
       )}
 
-      {state.screen === "phase-intro" && currentTopic && currentSub && (
-        <PhaseIntro
-          topic={currentTopic}
-          sub={currentSub}
-          isNewTopic={state.subIdx === 0}
-          onStart={goToGame}
-        />
-      )}
+      {/* Loading de questões */}
+      {(state.screen === "phase-intro" || state.screen === "game") &&
+        loadingQ && (
+          <div className="flex min-h-screen flex-col items-center justify-center px-5 text-center">
+            <div
+              className="mb-6 text-6xl"
+              style={{
+                animation: "spin 2s linear infinite",
+                display: "inline-block",
+              }}
+            >
+              {currentTopic?.icon ?? "💬"}
+            </div>
+            <h3 className="text-xl font-black mb-2">{currentTopic?.title}</h3>
+            <p className="text-sm text-white/50 mb-6">{currentSub?.title}</p>
+            <div
+              className="flex items-center gap-2 text-amber-400 font-bold text-sm"
+              style={{ animation: "pulse 1.5s ease-in-out infinite" }}
+            >
+              <div
+                className="h-4 w-4 rounded-full border-2 border-amber-400 border-t-transparent"
+                style={{ animation: "spin 0.8s linear infinite" }}
+              />
+              Gerando questões com IA...
+            </div>
+          </div>
+        )}
 
-      {state.screen === "game" && currentTopic && currentSub && currentItem && (
-        <GameScreen
-          state={state}
-          topic={currentTopic}
-          sub={currentSub}
-          item={currentItem}
-          globalProgress={globalProgress}
-          totalItems={totalItems}
-          onSelectChoice={selectChoice}
-          onNextItem={nextItem}
-        />
-      )}
+      {state.screen === "phase-intro" &&
+        !loadingQ &&
+        currentTopic &&
+        currentSub && (
+          <PhaseIntro
+            topic={currentTopic}
+            sub={currentSub}
+            isNewTopic={state.subIdx === 0}
+            onStart={goToGame}
+          />
+        )}
+
+      {state.screen === "game" &&
+        !loadingQ &&
+        currentTopic &&
+        currentSub &&
+        currentItem && (
+          <GameScreen
+            state={state}
+            topic={currentTopic}
+            sub={currentSub}
+            item={currentItem}
+            globalProgress={globalProgress}
+            totalItems={totalItems}
+            onSelectChoice={selectChoice}
+            onNextItem={nextItem}
+          />
+        )}
 
       {state.screen === "sub-result" && currentTopic && currentSub && (
         <PhaseResult
@@ -84,7 +123,7 @@ export function GameWrapper() {
       {(state.screen === "final" || state.screen === "leaderboard") && (
         <FinalResult
           state={state}
-          topics={currentTopic ? [currentTopic] : []}
+          topics={[]}
           maxScore={maxScore}
           classification={finalClassification}
           onRestart={restart}

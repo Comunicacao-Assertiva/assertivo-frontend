@@ -82,9 +82,13 @@ function ChoiceQuestion({
   state: GameState;
   onSelect: (c: Choice) => void;
 }) {
-  const [shuffled] = useState(() =>
-    [...item.choices].sort(() => Math.random() - 0.5),
-  );
+  // ✅ CORREÇÃO: re-embaralha toda vez que o ID da questão muda
+  const [shuffled, setShuffled] = useState<Choice[]>([]);
+
+  useEffect(() => {
+    setShuffled([...item.choices].sort(() => Math.random() - 0.5));
+  }, [item.id]);
+
   const sel = state.selectedChoice;
   const onStreak = state.streak >= 2;
 
@@ -98,6 +102,7 @@ function ChoiceQuestion({
         ? "border-amber-500 bg-amber-500/20"
         : "border-red-500 bg-red-500/20";
   };
+
   const badgeStyle = (c: Choice) => {
     if (!sel || c.id !== sel.id) return "bg-white/10 text-white/40";
     return c.type === "correct"
@@ -106,6 +111,8 @@ function ChoiceQuestion({
         ? "bg-amber-500 text-white"
         : "bg-red-500 text-white";
   };
+
+  if (shuffled.length === 0) return null;
 
   return (
     <div className="mx-auto w-full max-w-xl px-5 pt-4">
@@ -116,6 +123,7 @@ function ChoiceQuestion({
           </span>
         </div>
       )}
+
       <div className="flex flex-col gap-2.5 mb-4">
         {shuffled.map((c, i) => (
           <button
@@ -213,7 +221,7 @@ export function GameScreen({
     sub.items.slice(0, state.itemIdx).filter((i) => i.type === "choice")
       .length + 1;
   const totalQ = sub.items.filter((i) => i.type === "choice").length;
-  const isLastItem = state.itemIdx >= sub.items.length - 1;
+  const isLastItem = state.itemIdx >= 3;
   const nextLabel = isLastItem ? "Ver resultado do módulo →" : "Próxima →";
 
   return (
@@ -257,7 +265,7 @@ export function GameScreen({
           />
         </div>
 
-        {/* Contexto: Tópico › Módulo › Questão */}
+        {/* Contexto */}
         <div className="flex items-center gap-2 px-5 py-2 border-t border-white/5">
           <span className="text-xs">{topic.icon}</span>
           <span className="text-xs text-white/40 font-bold">{topic.title}</span>
@@ -287,7 +295,9 @@ export function GameScreen({
               </p>
             </div>
           </div>
+          {/* ✅ key={item.id} garante que o componente remonta a cada nova questão */}
           <ChoiceQuestion
+            key={item.id}
             item={item as ChoiceItem}
             state={state}
             onSelect={onSelectChoice}
@@ -307,7 +317,7 @@ export function GameScreen({
         </div>
       )}
 
-      {/* Botão próximo (só para perguntas) */}
+      {/* Botão próximo */}
       {state.answered && isQuestion && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 animate-[pop_0.3s_ease]">
           <button

@@ -1,13 +1,11 @@
 "use client";
 import { useReducer, useCallback, useEffect, useState } from "react";
-import type { GameState, Choice, Screen } from "@/types/game";
+import type { GameState, Choice, Screen, ChoiceItem } from "@/types/game";
 import { PHASES_DATA } from "@/data/phases";
 import { saveScore } from "@/lib/supabase";
 
-const TOPICS = PHASES_DATA;
-const N_TOPICS = TOPICS.length;
-const N_SUBS = 3;
-const SAVE_KEY = "assertivo_save_v2";
+const N = PHASES_DATA.length;
+const SAVE_KEY = "assertivo_progresso";
 
 const makeInitial = (): GameState => ({
   screen: "welcome",
@@ -21,15 +19,16 @@ const makeInitial = (): GameState => ({
   maxStreak: 0,
   answered: false,
   selectedChoice: null,
-  topicScores: Array(N_TOPICS).fill(0),
+  topicScores: Array(N).fill(0),
   correct: 0,
   partial: 0,
   wrong: 0,
-  breakdown: Array.from({ length: N_TOPICS }, () =>
-    Array.from({ length: N_SUBS }, () => []),
+  breakdown: Array.from({ length: N }, () =>
+    Array.from({ length: 3 }, () => []),
   ),
 });
 
+// ── Tipos do save ──────────────────────────────────────
 interface SavedData {
   playerName: string;
   topicIdx: number;
@@ -44,22 +43,28 @@ interface SavedData {
   partial: number;
   wrong: number;
   breakdown: { pts: number }[][][];
+  savedAt: string; // timestamp
 }
 
 function loadSaved(): SavedData | null {
   if (typeof window === "undefined") return null;
   try {
-    const r = localStorage.getItem(SAVE_KEY);
-    return r ? JSON.parse(r) : null;
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw) as SavedData;
+    // Valida que o save tem os campos necessários
+    if (!data.playerName || data.topicIdx === undefined) return null;
+    return data;
   } catch {
     return null;
   }
 }
+
 function writeSave(s: GameState) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(
-    SAVE_KEY,
-    JSON.stringify({
+  if (!s.playerName) return; // não salva sem nome
+  try {
+    const data: SavedData = {
       playerName: s.playerName,
       topicIdx: s.topicIdx,
       subIdx: s.subIdx,
@@ -73,14 +78,22 @@ function writeSave(s: GameState) {
       partial: s.partial,
       wrong: s.wrong,
       breakdown: s.breakdown,
-    }),
-  );
-}
-function clearSave() {
-  if (typeof window === "undefined") return;
-  localStorage.removeItem(SAVE_KEY);
+      savedAt: new Date().toISOString(),
+    };
+    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+  } catch {
+    // localStorage cheio ou bloqueado — ignora silenciosamente
+  }
 }
 
+function clearSave() {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.removeItem(SAVE_KEY);
+  } catch {}
+}
+
+// ── Reducer ────────────────────────────────────────────
 type Action =
   | { type: "SET_SCREEN"; screen: Screen }
   | { type: "SET_NAME"; name: string }
@@ -111,19 +124,11 @@ function reducer(state: GameState, action: Action): GameState {
       const { choice } = action;
       const isCorrect = choice.type === "correct";
       const isWrong = choice.type === "wrong";
-      const onStreak = state.streak >= 2;
-      const pts = isCorrect ? (onStreak ? 150 : 100) : choice.points;
+      const pts = isCorrect ? (state.streak >= 2 ? 150 : 100) : choice.points;
       const newStreak = isCorrect ? state.streak + 1 : 0;
       const newLives = isWrong ? Math.max(0, state.lives - 1) : state.lives;
       const newTopicScores = [...state.topicScores];
       newTopicScores[state.topicIdx] += pts;
-      const newBreakdown = state.breakdown.map((topic, ti) =>
-        topic.map((sub, si) =>
-          ti === state.topicIdx && si === state.subIdx
-            ? [...sub, { pts }]
-            : sub,
-        ),
-      );
       return {
         ...state,
         answered: true,
@@ -136,16 +141,17 @@ function reducer(state: GameState, action: Action): GameState {
         correct: isCorrect ? state.correct + 1 : state.correct,
         partial: choice.type === "partial" ? state.partial + 1 : state.partial,
         wrong: isWrong ? state.wrong + 1 : state.wrong,
-        breakdown: newBreakdown,
+        breakdown: state.breakdown.map((t, ti) =>
+          t.map((s, si) =>
+            ti === state.topicIdx && si === state.subIdx ? [...s, { pts }] : s,
+          ),
+        ),
       };
     }
 
     case "NEXT_ITEM": {
       if (state.lives <= 0) return { ...state, screen: "game-over" };
-      const currentSub = TOPICS[state.topicIdx].subPhases[state.subIdx];
-      const totalItems = currentSub.items.length;
-      const nextItemIdx = state.itemIdx + 1;
-      if (nextItemIdx >= totalItems)
+      if (state.itemIdx >= 3)
         return {
           ...state,
           screen: "sub-result",
@@ -154,36 +160,34 @@ function reducer(state: GameState, action: Action): GameState {
         };
       return {
         ...state,
-        itemIdx: nextItemIdx,
+        itemIdx: state.itemIdx + 1,
         answered: false,
         selectedChoice: null,
       };
     }
 
     case "NEXT_SUB": {
-      const nextSubIdx = state.subIdx + 1;
-      if (nextSubIdx < N_SUBS) {
+      const nextSub = state.subIdx + 1;
+      if (nextSub < 3)
         return {
           ...state,
-          subIdx: nextSubIdx,
+          subIdx: nextSub,
           itemIdx: 0,
           answered: false,
           selectedChoice: null,
           screen: "phase-intro",
         };
-      }
-      const nextTopicIdx = state.topicIdx + 1;
-      if (nextTopicIdx < N_TOPICS) {
+      const nextTopic = state.topicIdx + 1;
+      if (nextTopic < N)
         return {
           ...state,
-          topicIdx: nextTopicIdx,
+          topicIdx: nextTopic,
           subIdx: 0,
           itemIdx: 0,
           answered: false,
           selectedChoice: null,
           screen: "phase-intro",
         };
-      }
       return { ...state, screen: "final" };
     }
 
@@ -194,14 +198,43 @@ function reducer(state: GameState, action: Action): GameState {
   }
 }
 
+// ── Gera questões via API ─────────────────────────────
+async function generateQuestions(
+  topicIdx: number,
+  subIdx: number,
+): Promise<ChoiceItem[]> {
+  const topic = PHASES_DATA[topicIdx];
+  const sub = topic.subPhases[subIdx];
+  const res = await fetch("/api/generate-questions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      topicTitle: topic.title,
+      subTitle: sub.title,
+      topicNumber: topicIdx + 1,
+      subNumber: subIdx + 1,
+    }),
+  });
+  const data = await res.json();
+  if (data.error || !data.questions) throw new Error(data.error);
+  return data.questions;
+}
+
+// ── Hook principal ────────────────────────────────────
 export function useGame() {
   const [state, dispatch] = useReducer(reducer, undefined, makeInitial);
   const [savedGame, setSavedGame] = useState<SavedData | null>(null);
+  const [genQuestions, setGenQuestions] = useState<
+    Record<string, ChoiceItem[]>
+  >({});
+  const [loadingQ, setLoadingQ] = useState(false);
 
+  // Carrega save ao abrir o app
   useEffect(() => {
     setSavedGame(loadSaved());
   }, []);
 
+  // Salva automaticamente sempre que o estado relevante muda
   useEffect(() => {
     if (state.screen === "welcome") return;
     if (state.screen === "final" || state.screen === "game-over") {
@@ -209,34 +242,45 @@ export function useGame() {
       setSavedGame(null);
       return;
     }
-    if (state.playerName) writeSave(state);
-  }, [state]);
+    writeSave(state);
+  }, [
+    state.screen,
+    state.topicIdx,
+    state.subIdx,
+    state.itemIdx,
+    state.score,
+    state.lives,
+    state.streak,
+    state.correct,
+    state.partial,
+    state.wrong,
+  ]);
 
-  const currentTopic = TOPICS[state.topicIdx] ?? null;
+  // Gera questões ao entrar em nova subfase
+  useEffect(() => {
+    if (state.screen !== "phase-intro" && state.screen !== "game") return;
+    const key = `${state.topicIdx}-${state.subIdx}`;
+    if (genQuestions[key]) return;
+
+    setLoadingQ(true);
+    generateQuestions(state.topicIdx, state.subIdx)
+      .then((questions) => {
+        setGenQuestions((prev) => ({ ...prev, [key]: questions }));
+        setLoadingQ(false);
+      })
+      .catch(() => setLoadingQ(false));
+  }, [state.topicIdx, state.subIdx, state.screen]);
+
+  const currentTopic = PHASES_DATA[state.topicIdx] ?? null;
   const currentSub = currentTopic?.subPhases[state.subIdx] ?? null;
-  const currentItem = currentSub?.items[state.itemIdx] ?? null;
-  const maxScore = TOPICS.reduce(
-    (acc, t) =>
-      acc +
-      t.subPhases.reduce(
-        (a, s) => a + s.items.filter((i) => i.type === "choice").length * 100,
-        0,
-      ),
-    0,
-  );
-  const globalProgress =
-    TOPICS.slice(0, state.topicIdx).reduce(
-      (acc, t) => acc + t.subPhases.reduce((a, s) => a + s.items.length, 0),
-      0,
-    ) +
-    (currentTopic?.subPhases
-      .slice(0, state.subIdx)
-      .reduce((a, s) => a + s.items.length, 0) ?? 0) +
-    state.itemIdx;
-  const totalItems = TOPICS.reduce(
-    (acc, t) => acc + t.subPhases.reduce((a, s) => a + s.items.length, 0),
-    0,
-  );
+  const key = `${state.topicIdx}-${state.subIdx}`;
+  const tip = currentSub?.items[0];
+  const questions = genQuestions[key] ?? [];
+  const allItems = tip ? [tip, ...questions] : questions;
+  const currentItem = allItems[state.itemIdx] ?? null;
+  const totalItems = N * 3 * 4;
+  const globalProgress = state.topicIdx * 12 + state.subIdx * 4 + state.itemIdx;
+  const maxScore = N * 3 * 3 * 100;
 
   const getClass = useCallback(
     (score: number) => {
@@ -253,15 +297,19 @@ export function useGame() {
   const startGame = useCallback((name: string) => {
     clearSave();
     setSavedGame(null);
+    setGenQuestions({});
     dispatch({ type: "RESTART" });
     dispatch({ type: "SET_NAME", name });
     dispatch({ type: "SET_SCREEN", screen: "phase-intro" });
   }, []);
+
   const continueGame = useCallback(() => {
     const saved = loadSaved();
     if (!saved) return;
+    setGenQuestions({}); // questões serão regeneradas
     dispatch({ type: "LOAD_SAVE", data: saved });
   }, []);
+
   const goToGame = useCallback(
     () => dispatch({ type: "SET_SCREEN", screen: "game" }),
     [],
@@ -275,6 +323,7 @@ export function useGame() {
   const restart = useCallback(() => {
     clearSave();
     setSavedGame(null);
+    setGenQuestions({});
     dispatch({ type: "RESTART" });
   }, []);
 
@@ -297,10 +346,12 @@ export function useGame() {
     currentTopic,
     currentSub,
     currentItem,
+    allItems,
+    loadingQ,
+    savedGame,
     globalProgress,
     totalItems,
     maxScore,
-    savedGame,
     finalClassification: getClass(state.score),
     startGame,
     continueGame,
