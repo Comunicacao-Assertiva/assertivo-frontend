@@ -1,10 +1,11 @@
 "use client";
 import { useReducer, useCallback } from "react";
-import type { GameState, Screen } from "@/types/game";
+import type { GameState, Choice, Screen } from "@/types/game";
 import { PHASES_DATA } from "@/data/phases";
-import { saveScore, getClassification } from "@/lib/supabase";
+import { saveScore } from "@/lib/supabase";
 
 const N = PHASES_DATA.length;
+const PER_PHASE = 5;
 
 const makeInitial = (): GameState => ({
   screen: "welcome",
@@ -12,8 +13,11 @@ const makeInitial = (): GameState => ({
   phase: 0,
   scenario: 0,
   score: 0,
+  lives: 3,
+  streak: 0,
+  maxStreak: 0,
   answered: false,
-  scenarioScore: null,
+  selectedChoice: null,
   phaseScores: Array(N).fill(0),
   correct: 0,
   partial: 0,
@@ -24,7 +28,7 @@ const makeInitial = (): GameState => ({
 type Action =
   | { type: "SET_SCREEN"; screen: Screen }
   | { type: "SET_NAME"; name: string }
-  | { type: "SCORE_SCENARIO"; pts: number }
+  | { type: "SELECT_CHOICE"; choice: Choice }
   | { type: "NEXT_SCENARIO" }
   | { type: "NEXT_PHASE" }
   | { type: "RESTART" };
@@ -36,30 +40,50 @@ function reducer(state: GameState, action: Action): GameState {
     case "SET_NAME":
       return { ...state, playerName: action.name };
 
-    case "SCORE_SCENARIO": {
-      const pts = action.pts;
+    case "SELECT_CHOICE": {
+      if (state.answered) return state;
+      const { choice } = action;
+      const isCorrect = choice.type === "correct";
+      const isWrong = choice.type === "wrong";
+
+      // Streak bonus: 2 corretas seguidas → próxima correta vale 150
+      const onStreak = state.streak >= 2;
+      const pts = isCorrect ? (onStreak ? 150 : 100) : choice.points;
+      const newStreak = isCorrect ? state.streak + 1 : 0;
+      const newLives = isWrong ? Math.max(0, state.lives - 1) : state.lives;
+
       const newPhaseScores = [...state.phaseScores];
       newPhaseScores[state.phase] += pts;
-      const newBreakdown = state.phaseBreakdown.map((d, i) =>
-        i === state.phase ? [...d, { pts }] : d,
-      );
+
       return {
         ...state,
         answered: true,
-        scenarioScore: pts,
+        selectedChoice: choice,
         score: state.score + pts,
+        lives: newLives,
+        streak: newStreak,
+        maxStreak: Math.max(state.maxStreak, newStreak),
         phaseScores: newPhaseScores,
-        correct: pts === 100 ? state.correct + 1 : state.correct,
-        partial: pts > 0 && pts < 100 ? state.partial + 1 : state.partial,
-        wrong: pts === 0 ? state.wrong + 1 : state.wrong,
-        phaseBreakdown: newBreakdown,
+        correct: isCorrect ? state.correct + 1 : state.correct,
+        partial: choice.type === "partial" ? state.partial + 1 : state.partial,
+        wrong: isWrong ? state.wrong + 1 : state.wrong,
+        phaseBreakdown: state.phaseBreakdown.map((d, i) =>
+          i === state.phase ? [...d, { pts }] : d,
+        ),
       };
     }
 
     case "NEXT_SCENARIO": {
+      // Sem vidas → game over
+      if (state.lives <= 0) return { ...state, screen: "game-over" };
       const next = state.scenario + 1;
-      if (next >= 3) return { ...state, screen: "phase-result" };
-      return { ...state, scenario: next, answered: false, scenarioScore: null };
+      if (next >= PER_PHASE) return { ...state, screen: "phase-result" };
+      return {
+        ...state,
+        scenario: next,
+        answered: false,
+        selectedChoice: null,
+      };
     }
 
     case "NEXT_PHASE": {
@@ -70,7 +94,7 @@ function reducer(state: GameState, action: Action): GameState {
         phase: next,
         scenario: 0,
         answered: false,
-        scenarioScore: null,
+        selectedChoice: null,
         screen: "phase-intro",
       };
     }
@@ -88,15 +112,15 @@ export function useGame() {
   const phases = PHASES_DATA;
   const currentPhase = phases[state.phase] ?? null;
   const currentScenario = currentPhase?.scenarios[state.scenario] ?? null;
-  const globalProgress = state.phase * 3 + state.scenario;
-  const maxScore = N * 300;
+  const globalProgress = state.phase * PER_PHASE + state.scenario;
+  const maxScore = N * PER_PHASE * 100;
 
   const getClass = useCallback(
     (score: number) => {
       const pct = score / maxScore;
-      if (pct >= 0.93) return { title: "Mestre da Comunicação", trophy: "🏆" };
-      if (pct >= 0.73) return { title: "Comunicador Assertivo", trophy: "🥇" };
-      if (pct >= 0.47)
+      if (pct >= 0.9) return { title: "Mestre da Comunicação", trophy: "🏆" };
+      if (pct >= 0.7) return { title: "Comunicador Assertivo", trophy: "🥇" };
+      if (pct >= 0.45)
         return { title: "Comunicador em Crescimento", trophy: "🥈" };
       return { title: "Aprendiz em Comunicação", trophy: "🌱" };
     },
@@ -112,8 +136,8 @@ export function useGame() {
     () => dispatch({ type: "SET_SCREEN", screen: "game" }),
     [],
   );
-  const scoreScenario = useCallback(
-    (pts: number) => dispatch({ type: "SCORE_SCENARIO", pts }),
+  const selectChoice = useCallback(
+    (c: Choice) => dispatch({ type: "SELECT_CHOICE", choice: c }),
     [],
   );
   const nextScenario = useCallback(
@@ -144,10 +168,11 @@ export function useGame() {
     currentScenario,
     globalProgress,
     maxScore,
+    perPhase: PER_PHASE,
     finalClassification: getClass(state.score),
     startGame,
     goToGame,
-    scoreScenario,
+    selectChoice,
     nextScenario,
     nextPhase,
     restart,
