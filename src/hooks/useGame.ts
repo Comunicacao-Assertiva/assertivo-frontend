@@ -90,6 +90,134 @@ function clearSave() {
   } catch {}
 }
 
+// ── Fallback quando API falha ─────────────────────────
+const FALLBACK_QUESTIONS = (topicTitle: string): ChoiceItem[] => [
+  {
+    id: "fb-1",
+    type: "choice",
+    tag: "💬 Situacao do dia a dia",
+    question: `No contexto de ${topicTitle}, alguem te faz uma critica inesperada. O que voce faz?`,
+    choices: [
+      {
+        id: "a",
+        text: "Rebate imediatamente sem ouvir completamente.",
+        points: 0,
+        type: "wrong",
+        feedback:
+          "Reagir sem ouvir raramente resolve. A defensividade fecha o dialogo.",
+      },
+      {
+        id: "b",
+        text: "Ouve com atencao, agradece e pede exemplos concretos.",
+        points: 100,
+        type: "correct",
+        feedback:
+          "Abertura genuina antes de contestar. Voce aprende mais e responde melhor.",
+      },
+      {
+        id: "c",
+        text: "Concorda com tudo para evitar conflito.",
+        points: 25,
+        type: "partial",
+        feedback:
+          "Evitar o conflito tem um custo: voce nao processa nem resolve nada de verdade.",
+      },
+    ],
+  },
+  {
+    id: "fb-2",
+    type: "choice",
+    tag: "🤝 Relacao interpessoal",
+    question: `Voce precisa dizer nao para alguem proximo no contexto de ${topicTitle}. Como age?`,
+    choices: [
+      {
+        id: "a",
+        text: "Aceita mesmo sem querer para nao decepcionar.",
+        points: 0,
+        type: "wrong",
+        feedback:
+          "Aceitar contra sua vontade gera ressentimento e prejudica o relacionamento.",
+      },
+      {
+        id: "b",
+        text: "Recusa com clareza, explica o motivo e oferece uma alternativa.",
+        points: 100,
+        type: "correct",
+        feedback:
+          "Direto, respeitoso e construtivo. Isso e assertividade na pratica.",
+      },
+      {
+        id: "c",
+        text: "Inventa uma desculpa para evitar a conversa direta.",
+        points: 25,
+        type: "partial",
+        feedback:
+          "Resolve o momento mas cria um padrao de desonestidade na relacao.",
+      },
+    ],
+  },
+  {
+    id: "fb-3",
+    type: "choice",
+    tag: "💡 Tomada de decisao",
+    question: `Uma decisao importante precisa ser tomada em grupo sobre ${topicTitle}. Voce discorda da direcao. O que faz?`,
+    choices: [
+      {
+        id: "a",
+        text: "Fica quieto para nao ser o unico discordante.",
+        points: 0,
+        type: "wrong",
+        feedback:
+          "Silenciar sua perspectiva valida priva o grupo de informacao importante.",
+      },
+      {
+        id: "b",
+        text: "Pede espaco: Tenho uma perspectiva diferente, posso compartilhar?",
+        points: 100,
+        type: "correct",
+        feedback:
+          "Voce contribui sem impor e cria dialogo real. Assertividade que serve ao grupo.",
+      },
+      {
+        id: "c",
+        text: "Concorda na reuniao mas reclama depois para outros.",
+        points: 0,
+        type: "wrong",
+        feedback: "Triangulacao nao resolve e cria ambiente de desconfianca.",
+      },
+    ],
+  },
+];
+
+// ── Gera questoes via API ─────────────────────────────
+async function fetchQuestions(
+  topicIdx: number,
+  subIdx: number,
+): Promise<ChoiceItem[]> {
+  const topic = PHASES_DATA[topicIdx];
+  const sub = topic.subPhases[subIdx];
+  try {
+    const res = await fetch("/api/generate-questions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        topicTitle: topic.title,
+        subTitle: sub.title,
+        topicNumber: topicIdx + 1,
+        subNumber: subIdx + 1,
+      }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (data.error || !data.questions?.length) throw new Error(data.error);
+    return data.questions;
+  } catch (err) {
+    console.warn("API de questoes falhou, usando fallback:", err);
+    return FALLBACK_QUESTIONS(topic.title);
+  }
+}
+
+// ── Reducer ────────────────────────────────────────────
 type Action =
   | { type: "SET_SCREEN"; screen: Screen }
   | { type: "SET_NAME"; name: string }
@@ -194,27 +322,7 @@ function reducer(state: GameState, action: Action): GameState {
   }
 }
 
-async function fetchQuestions(
-  topicIdx: number,
-  subIdx: number,
-): Promise<ChoiceItem[]> {
-  const topic = PHASES_DATA[topicIdx];
-  const sub = topic.subPhases[subIdx];
-  const res = await fetch("/api/generate-questions", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      topicTitle: topic.title,
-      subTitle: sub.title,
-      topicNumber: topicIdx + 1,
-      subNumber: subIdx + 1,
-    }),
-  });
-  const data = await res.json();
-  if (data.error || !data.questions) throw new Error(data.error);
-  return data.questions;
-}
-
+// ── Hook principal ────────────────────────────────────
 export function useGame() {
   const [state, dispatch] = useReducer(reducer, undefined, makeInitial);
   const [savedGame, setSavedGame] = useState<SavedData | null>(null);
@@ -248,7 +356,7 @@ export function useGame() {
     state.wrong,
   ]);
 
-  // Gera questões ao entrar em subfase
+  // Gera questoes ao entrar em nova subfase
   useEffect(() => {
     if (state.screen !== "phase-intro" && state.screen !== "game") return;
     const key = `${state.topicIdx}-${state.subIdx}`;
@@ -259,9 +367,17 @@ export function useGame() {
         setGenQ((prev) => ({ ...prev, [key]: qs }));
         setLoadingQ(false);
       })
-      .catch(() => setLoadingQ(false));
+      .catch(() => {
+        const topic = PHASES_DATA[state.topicIdx];
+        setGenQ((prev) => ({
+          ...prev,
+          [key]: FALLBACK_QUESTIONS(topic.title),
+        }));
+        setLoadingQ(false);
+      });
   }, [state.topicIdx, state.subIdx, state.screen]);
 
+  // Monta itens da subfase: [tip, q1, q2, q3]
   const currentTopic = PHASES_DATA[state.topicIdx] ?? null;
   const currentSub = currentTopic?.subPhases[state.subIdx] ?? null;
   const key = `${state.topicIdx}-${state.subIdx}`;
@@ -276,11 +392,11 @@ export function useGame() {
   const getClass = useCallback(
     (s: number) => {
       const p = s / maxScore;
-      if (p >= 0.9) return { title: "Mestre da Comunicação", trophy: "🏆" };
+      if (p >= 0.9) return { title: "Mestre da Comunicacao", trophy: "🏆" };
       if (p >= 0.7) return { title: "Comunicador Assertivo", trophy: "🥇" };
       if (p >= 0.45)
         return { title: "Comunicador em Crescimento", trophy: "🥈" };
-      return { title: "Aprendiz em Comunicação", trophy: "🌱" };
+      return { title: "Aprendiz em Comunicacao", trophy: "🌱" };
     },
     [maxScore],
   );
