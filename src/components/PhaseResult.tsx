@@ -15,16 +15,11 @@ export function PhaseResult({ topic, sub, state, subIdx, onNext }: Props) {
   const correct = breakdown.filter((b) => b.pts >= 100).length;
   const partial = breakdown.filter((b) => b.pts > 0 && b.pts < 100).length;
   const wrong = breakdown.filter((b) => b.pts === 0).length;
-  const totalQ = sub.items.filter((i) => i.type === "choice").length;
+  const totalQ = 3;
   const maxPts = totalQ * 100;
+  const pct = maxPts > 0 ? pts / maxPts : 0;
   const stars =
-    pts === maxPts
-      ? "⭐⭐⭐"
-      : pts >= maxPts * 0.5
-        ? "⭐⭐"
-        : pts > 0
-          ? "⭐"
-          : "—";
+    pct >= 1 ? "⭐⭐⭐" : pct >= 0.5 ? "⭐⭐" : pts > 0 ? "⭐" : "—";
   const isLastSub = subIdx === 2;
   const isLastTopic = state.topicIdx === 7;
 
@@ -67,12 +62,12 @@ export function PhaseResult({ topic, sub, state, subIdx, onNext }: Props) {
         )}
       </div>
 
-      {/* Indicador de subfases do tópico */}
+      {/* Indicador de módulos */}
       <div className="mb-6 flex gap-2">
         {[0, 1, 2].map((i) => (
           <div
             key={i}
-            className={`h-2 w-16 rounded-full ${i <= subIdx ? "bg-amber-500" : "bg-white/10"}`}
+            className={`h-2 w-16 rounded-full transition-all ${i <= subIdx ? "bg-amber-500" : "bg-white/10"}`}
           />
         ))}
       </div>
@@ -84,7 +79,7 @@ export function PhaseResult({ topic, sub, state, subIdx, onNext }: Props) {
         {isLastSub && isLastTopic
           ? "Ver Resultado Final →"
           : isLastSub
-            ? `Próximo Tópico: ${topic.id + 1} →`
+            ? "Próximo Tópico →"
             : `Módulo ${subIdx + 2} →`}
       </button>
     </div>

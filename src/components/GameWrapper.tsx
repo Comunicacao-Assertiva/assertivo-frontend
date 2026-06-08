@@ -13,12 +13,11 @@ export function GameWrapper() {
     currentTopic,
     currentSub,
     currentItem,
-    allItems,
     loadingQ,
+    savedGame,
     globalProgress,
     totalItems,
     maxScore,
-    savedGame,
     finalClassification,
     startGame,
     continueGame,
@@ -38,9 +37,10 @@ export function GameWrapper() {
         @keyframes slideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
         @keyframes pop{from{opacity:0;transform:translateX(-50%) scale(.85)}to{opacity:1;transform:translateX(-50%) scale(1)}}
         @keyframes spin{to{transform:rotate(360deg)}}
-        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+        @keyframes pulse2{0%,100%{opacity:1}50%{opacity:.4}}
       `}</style>
 
+      {/* Welcome */}
       {state.screen === "welcome" && (
         <WelcomeScreen
           onStart={startGame}
@@ -65,8 +65,8 @@ export function GameWrapper() {
             <h3 className="text-xl font-black mb-2">{currentTopic?.title}</h3>
             <p className="text-sm text-white/50 mb-6">{currentSub?.title}</p>
             <div
-              className="flex items-center gap-2 text-amber-400 font-bold text-sm"
-              style={{ animation: "pulse 1.5s ease-in-out infinite" }}
+              className="flex items-center gap-3 text-amber-400 font-bold text-sm"
+              style={{ animation: "pulse2 1.5s ease-in-out infinite" }}
             >
               <div
                 className="h-4 w-4 rounded-full border-2 border-amber-400 border-t-transparent"
@@ -77,6 +77,7 @@ export function GameWrapper() {
           </div>
         )}
 
+      {/* Phase intro */}
       {state.screen === "phase-intro" &&
         !loadingQ &&
         currentTopic &&
@@ -89,6 +90,7 @@ export function GameWrapper() {
           />
         )}
 
+      {/* Game */}
       {state.screen === "game" &&
         !loadingQ &&
         currentTopic &&
@@ -106,6 +108,7 @@ export function GameWrapper() {
           />
         )}
 
+      {/* Sub result */}
       {state.screen === "sub-result" && currentTopic && currentSub && (
         <PhaseResult
           topic={currentTopic}
@@ -116,14 +119,15 @@ export function GameWrapper() {
         />
       )}
 
+      {/* Game over */}
       {state.screen === "game-over" && (
         <GameOver state={state} maxScore={maxScore} onRestart={restart} />
       )}
 
+      {/* Final */}
       {(state.screen === "final" || state.screen === "leaderboard") && (
         <FinalResult
           state={state}
-          topics={[]}
           maxScore={maxScore}
           classification={finalClassification}
           onRestart={restart}

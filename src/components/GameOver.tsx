@@ -8,7 +8,7 @@ interface Props {
   onRestart: () => void;
 }
 
-export function GameOver({ state, maxScore, onRestart }: Props) {
+export function GameOver({ state, onRestart }: Props) {
   const topic = PHASES_DATA[state.topicIdx];
   const sub = topic?.subPhases[state.subIdx];
 
@@ -19,7 +19,7 @@ export function GameOver({ state, maxScore, onRestart }: Props) {
       <p className="text-white/50 mb-1 text-sm">Você ficou sem vidas</p>
       <p className="text-white/50 mb-6 text-sm">
         {topic?.icon} {topic?.title} · Módulo {state.subIdx + 1}
-        {sub && ` — ${sub.title}`}
+        {sub ? ` — ${sub.title}` : ""}
       </p>
 
       <div className="mb-8 w-full max-w-xs rounded-2xl border border-white/10 bg-white/5 p-6">
@@ -27,15 +27,15 @@ export function GameOver({ state, maxScore, onRestart }: Props) {
         <p className="text-sm text-white/40 mb-5">pontos acumulados</p>
         <div className="grid grid-cols-3 gap-3">
           {[
-            { n: state.correct, l: "✅", sub: "Certas" },
-            { n: state.partial, l: "⚠️", sub: "Parciais" },
-            { n: state.wrong, l: "❌", sub: "Erradas" },
-          ].map(({ n, l, sub }) => (
-            <div key={sub} className="rounded-xl bg-white/5 py-2.5 text-center">
+            { n: state.correct, l: "✅", s: "Certas" },
+            { n: state.partial, l: "⚠️", s: "Parciais" },
+            { n: state.wrong, l: "❌", s: "Erradas" },
+          ].map(({ n, l, s }) => (
+            <div key={s} className="rounded-xl bg-white/5 py-2.5 text-center">
               <p className="text-base">{l}</p>
               <p className="text-lg font-black text-amber-400">{n}</p>
               <p className="text-[10px] text-white/35 font-bold uppercase">
-                {sub}
+                {s}
               </p>
             </div>
           ))}

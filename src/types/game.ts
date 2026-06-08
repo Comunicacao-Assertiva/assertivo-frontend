@@ -16,7 +16,6 @@ export interface Choice {
   feedback: string;
 }
 
-// Item do tipo dica (card educativo)
 export interface TipItem {
   id: string;
   type: "tip";
@@ -25,7 +24,6 @@ export interface TipItem {
   content: string;
 }
 
-// Item do tipo pergunta
 export interface ChoiceItem {
   id: string;
   type: "choice";
@@ -40,7 +38,7 @@ export interface SubPhase {
   id: string;
   title: string;
   description: string;
-  items: SubItem[]; // [tip, q, q, q]
+  items: SubItem[];
 }
 
 export interface Topic {
@@ -83,6 +81,7 @@ export interface ScoreSubmit {
   partial_count: number;
   wrong_count: number;
 }
+
 export interface ScoreResponse {
   id: string;
   player_name: string;

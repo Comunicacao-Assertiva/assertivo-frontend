@@ -2,27 +2,26 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   const { topicTitle, subTitle, topicNumber, subNumber } = await req.json();
-
-  const difficulty = (topicNumber - 1) * 3 + subNumber; // 1-24, progressivo
+  const difficulty = (topicNumber - 1) * 3 + subNumber;
 
   const prompt = `Você é um gerador de questões para um jogo educativo sobre comunicação assertiva em português brasileiro.
 
-Tópico: ${topicTitle} (Tópico ${topicNumber} de 8)
+Tópico: ${topicTitle} (${topicNumber} de 8)
 Módulo: ${subTitle}
-Dificuldade: ${difficulty}/24 (quanto maior, mais sutil e difícil)
+Dificuldade: ${difficulty}/24
 
 Gere EXATAMENTE 3 questões de múltipla escolha. Regras:
 
-1. Cenários VARIADOS e REALISTAS — use contextos diferentes entre as 3 questões. Exemplos: casal, família, restaurante, vizinho, médico, academia, cliente difícil, grupo de amigos, compra online, entrevista, festa, redes sociais, chefe novo, etc. EVITE todas as questões em reunião de escritório.
+1. Cenários VARIADOS — use contextos diferentes nas 3 questões: casal, família, restaurante, vizinho, médico, cliente, amigos, compra, entrevista, festa, redes sociais, academia, etc. EVITE repetir reunião de escritório.
 
-2. Cada questão tem 3 opções onde:
-   - Uma é ASSERTIVA e correta → points: 100, type: "correct"
-   - Uma parece razoável mas é inadequada → points: 0, type: "wrong"  
-   - Uma é parcialmente certa mas incompleta → points: 50, type: "partial"
+2. Cada questão tem 3 opções:
+   - ASSERTIVA correta → points: 100, type: "correct"
+   - Parece razoável mas é inadequada → points: 0, type: "wrong"
+   - Parcialmente certa mas incompleta → points: 50, type: "partial"
 
-3. Com dificuldade alta (>16): as 3 opções devem parecer razoáveis. A diferença entre elas deve ser sutil.
+3. Com dificuldade >16: as 3 opções devem parecer plausíveis. A distinção entre elas deve ser sutil.
 
-4. Feedbacks explicam o PORQUÊ de cada resposta estar certa ou errada (2 frases).
+4. Feedbacks explicam o PORQUÊ de cada resposta (2 frases objetivas).
 
 5. Varie qual opção (a, b ou c) é a correta entre as 3 questões.
 
@@ -32,15 +31,15 @@ Retorne APENAS JSON válido, sem markdown, sem texto antes ou depois:
     "id": "g1",
     "type": "choice",
     "tag": "emoji + contexto curto",
-    "question": "situação descrita como pergunta",
+    "question": "situação como pergunta",
     "choices": [
       {"id":"a","text":"opção a","points":0,"type":"wrong","feedback":"explicação"},
       {"id":"b","text":"opção b","points":100,"type":"correct","feedback":"explicação"},
       {"id":"c","text":"opção c","points":50,"type":"partial","feedback":"explicação"}
     ]
   },
-  { "id": "g2", ... },
-  { "id": "g3", ... }
+  { "id": "g2", "type": "choice", "tag": "...", "question": "...", "choices": [...] },
+  { "id": "g3", "type": "choice", "tag": "...", "question": "...", "choices": [...] }
 ]`;
 
   try {
@@ -60,11 +59,8 @@ Retorne APENAS JSON válido, sem markdown, sem texto antes ou depois:
 
     const data = await res.json();
     const text = data.content?.[0]?.text ?? "";
-
-    // Extrai o JSON da resposta
     const match = text.match(/\[[\s\S]*\]/);
-    if (!match) throw new Error("JSON não encontrado na resposta");
-
+    if (!match) throw new Error("JSON não encontrado");
     const questions = JSON.parse(match[0]);
     return NextResponse.json({ questions });
   } catch (err) {

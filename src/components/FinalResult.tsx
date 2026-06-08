@@ -6,7 +6,6 @@ import { PHASES_DATA } from "@/data/phases";
 
 interface Props {
   state: GameState;
-  topics: any[];
   maxScore: number;
   classification: { title: string; trophy: string };
   onRestart: () => void;
@@ -15,7 +14,7 @@ interface Props {
 
 const MESSAGES: Record<string, string> = {
   "Mestre da Comunicação":
-    "Domínio pleno da comunicação assertiva. É hora de multiplicar essa prática!",
+    "Domínio pleno! É hora de multiplicar essa prática no dia a dia.",
   "Comunicador Assertivo":
     "Resultado sólido! Continue desenvolvendo as áreas com menor pontuação.",
   "Comunicador em Crescimento":
@@ -40,11 +39,12 @@ export function FinalResult({
   }, []);
 
   useEffect(() => {
-    const colors = ["#C4873A", "#1B5E3B", "#fff", "#E09B45", "#2E7D55"];
+    // Confetti
+    const colors = ["#C4873A", "#1B5E3B", "#ffffff", "#E09B45", "#2E7D55"];
     for (let i = 0; i < 80; i++) {
       const el = document.createElement("div");
       const sz = 6 + Math.random() * 6;
-      el.style.cssText = `position:fixed;width:${sz}px;height:${sz}px;left:${Math.random() * 100}%;top:-20px;background:${colors[~~(Math.random() * colors.length)]};border-radius:${Math.random() > 0.5 ? "50%" : "2px"};animation:confettiFall ${1 + Math.random() * 2}s linear ${Math.random() * 1.5}s forwards;z-index:999;pointer-events:none;`;
+      el.style.cssText = `position:fixed;width:${sz}px;height:${sz}px;left:${Math.random() * 100}%;top:-20px;background:${colors[Math.floor(Math.random() * colors.length)]};border-radius:${Math.random() > 0.5 ? "50%" : "2px"};animation:confettiFall ${1 + Math.random() * 2}s linear ${Math.random() * 1.5}s forwards;z-index:999;pointer-events:none;`;
       document.body.appendChild(el);
       setTimeout(() => el.remove(), 4000);
     }
@@ -57,11 +57,6 @@ export function FinalResult({
   };
 
   if (showRank) {
-    const myPos =
-      ranking.findIndex(
-        (r) =>
-          r.player_name === state.playerName && r.total_score === state.score,
-      ) + 1;
     return (
       <div className="flex min-h-screen flex-col items-center justify-center px-5 py-10">
         <h2 className="text-3xl font-black mb-2 text-center">
@@ -70,18 +65,24 @@ export function FinalResult({
         <p className="text-sm text-white/40 mb-6 text-center">
           Top 10 pontuações
         </p>
+
         <div className="w-full max-w-sm space-y-2 mb-6">
+          {ranking.length === 0 && (
+            <p className="text-center text-white/40 text-sm">
+              Nenhuma pontuação ainda.
+            </p>
+          )}
           {ranking.map((entry, i) => {
             const isMe =
               entry.player_name === state.playerName &&
               entry.total_score === state.score;
             return (
               <div
-                key={entry.id}
+                key={entry.id ?? i}
                 className={`flex items-center gap-3 rounded-xl px-4 py-3 border ${isMe ? "bg-amber-500/20 border-amber-500/40" : "bg-white/5 border-white/10"}`}
               >
                 <span
-                  className={`text-lg font-black w-7 text-center ${i === 0 ? "text-amber-400" : i === 1 ? "text-white/60" : i === 2 ? "text-amber-700" : "text-white/30"}`}
+                  className={`text-lg font-black w-7 text-center ${i === 0 ? "text-amber-400" : i === 1 ? "text-white/60" : i === 2 ? "text-amber-700/80" : "text-white/30"}`}
                 >
                   {i === 0
                     ? "🥇"
@@ -91,9 +92,9 @@ export function FinalResult({
                         ? "🥉"
                         : `${i + 1}º`}
                 </span>
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <p
-                    className={`text-sm font-bold ${isMe ? "text-amber-400" : "text-white"}`}
+                    className={`text-sm font-bold truncate ${isMe ? "text-amber-400" : "text-white"}`}
                   >
                     {entry.player_name} {isMe && "← você"}
                   </p>
@@ -101,18 +102,14 @@ export function FinalResult({
                     {entry.classification}
                   </p>
                 </div>
-                <span className="text-sm font-black text-amber-400">
+                <span className="text-sm font-black text-amber-400 shrink-0">
                   {entry.total_score}
                 </span>
               </div>
             );
           })}
         </div>
-        {myPos > 0 && (
-          <p className="text-sm text-amber-400 font-bold mb-4">
-            Você ficou em {myPos}º lugar!
-          </p>
-        )}
+
         <div className="flex w-full max-w-sm flex-col gap-3">
           <button
             onClick={onRestart}
@@ -136,20 +133,24 @@ export function FinalResult({
       <div className="mb-4 animate-bounce text-6xl">
         {classification.trophy}
       </div>
+
       <span className="mb-3 rounded-full bg-gradient-to-r from-amber-500 to-amber-400 px-5 py-1.5 text-xs font-black uppercase tracking-widest text-white">
         {classification.title}
       </span>
+
       <h2 className="mb-1 text-3xl font-black">
         Parabéns, {state.playerName.split(" ")[0]}!
       </h2>
+
       <div className="text-6xl font-black text-amber-400 leading-tight">
         {state.score}
       </div>
       <p className="mb-2 text-base text-white/35">/ {maxScore} pontos</p>
       <p className="mb-6 max-w-xs text-sm leading-relaxed text-white/60">
-        {MESSAGES[classification.title]}
+        {MESSAGES[classification.title] ?? ""}
       </p>
 
+      {/* Resumo */}
       <div className="mb-5 grid w-full max-w-sm grid-cols-3 gap-2.5">
         {[
           { n: state.correct, l: "✅", s: "Assertivas" },
@@ -174,12 +175,12 @@ export function FinalResult({
         {PHASES_DATA.map((t, i) => (
           <div
             key={t.id}
-            className="flex items-center justify-between rounded-xl bg-white/5 px-4 py-2 text-sm"
+            className="flex items-center justify-between rounded-xl bg-white/5 border border-white/8 px-4 py-2 text-sm"
           >
-            <span className="text-white/55">
+            <span className="text-white/55 truncate">
               {t.icon} {t.title}
             </span>
-            <span className="font-black text-amber-400">
+            <span className="font-black text-amber-400 shrink-0 ml-2">
               {state.topicScores[i] ?? 0} pts
             </span>
           </div>
@@ -194,7 +195,7 @@ export function FinalResult({
 
       {saved && (
         <p className="mb-4 text-xs text-green-400/70">
-          ✅ Pontuação salva automaticamente
+          ✅ Pontuação salva no placar
         </p>
       )}
 

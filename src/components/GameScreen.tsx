@@ -10,7 +10,6 @@ import type {
   SubPhase,
 } from "@/types/game";
 
-// ── TIP CARD ────────────────────────────────────────────────────────────────
 function TipCard({
   item,
   onContinue,
@@ -70,7 +69,6 @@ function TipCard({
   );
 }
 
-// ── CHOICE QUESTION ──────────────────────────────────────────────────────────
 const LETTERS = ["A", "B", "C"] as const;
 
 function ChoiceQuestion({
@@ -82,15 +80,13 @@ function ChoiceQuestion({
   state: GameState;
   onSelect: (c: Choice) => void;
 }) {
-  // ✅ CORREÇÃO: re-embaralha toda vez que o ID da questão muda
   const [shuffled, setShuffled] = useState<Choice[]>([]);
+  const sel = state.selectedChoice;
+  const onStreak = state.streak >= 2;
 
   useEffect(() => {
     setShuffled([...item.choices].sort(() => Math.random() - 0.5));
   }, [item.id]);
-
-  const sel = state.selectedChoice;
-  const onStreak = state.streak >= 2;
 
   const btnStyle = (c: Choice) => {
     if (!sel)
@@ -169,7 +165,6 @@ function ChoiceQuestion({
   );
 }
 
-// ── GAME SCREEN PRINCIPAL ────────────────────────────────────────────────────
 interface Props {
   state: GameState;
   topic: Topic;
@@ -222,7 +217,6 @@ export function GameScreen({
       .length + 1;
   const totalQ = sub.items.filter((i) => i.type === "choice").length;
   const isLastItem = state.itemIdx >= 3;
-  const nextLabel = isLastItem ? "Ver resultado do módulo →" : "Próxima →";
 
   return (
     <div className="flex min-h-screen flex-col pb-32">
@@ -256,25 +250,27 @@ export function GameScreen({
             </span>
           </div>
         </div>
-
-        {/* Barra de progresso geral */}
         <div className="h-1 bg-white/10">
           <div
             className="h-full bg-gradient-to-r from-amber-500 to-amber-300 transition-all duration-500"
-            style={{ width: `${(globalProgress / totalItems) * 100}%` }}
+            style={{
+              width: `${Math.min((globalProgress / totalItems) * 100, 100)}%`,
+            }}
           />
         </div>
-
-        {/* Contexto */}
-        <div className="flex items-center gap-2 px-5 py-2 border-t border-white/5">
-          <span className="text-xs">{topic.icon}</span>
-          <span className="text-xs text-white/40 font-bold">{topic.title}</span>
-          <span className="text-white/20 text-xs">›</span>
-          <span className="text-xs text-white/55 font-bold">{sub.title}</span>
+        <div className="flex items-center gap-2 px-5 py-2 border-t border-white/5 text-xs">
+          <span>{topic.icon}</span>
+          <span className="text-white/40 font-bold truncate max-w-[100px]">
+            {topic.title}
+          </span>
+          <span className="text-white/20">›</span>
+          <span className="text-white/55 font-bold truncate max-w-[100px]">
+            {sub.title}
+          </span>
           {isQuestion && (
             <>
-              <span className="text-white/20 text-xs">›</span>
-              <span className="text-xs text-amber-400/70 font-bold">
+              <span className="text-white/20">›</span>
+              <span className="text-amber-400/70 font-bold">
                 Q {questionIdx}/{totalQ}
               </span>
             </>
@@ -282,7 +278,6 @@ export function GameScreen({
         </div>
       </div>
 
-      {/* Conteúdo */}
       {isQuestion ? (
         <>
           <div className="mx-auto w-full max-w-xl px-5 pt-5">
@@ -295,7 +290,6 @@ export function GameScreen({
               </p>
             </div>
           </div>
-          {/* ✅ key={item.id} garante que o componente remonta a cada nova questão */}
           <ChoiceQuestion
             key={item.id}
             item={item as ChoiceItem}
@@ -307,7 +301,6 @@ export function GameScreen({
         <TipCard item={item as TipItem} onContinue={onNextItem} />
       )}
 
-      {/* Animação de pontos */}
       {showPts && showPts.n > 0 && (
         <div
           className={`pointer-events-none fixed left-1/2 top-1/3 animate-[flyUp_0.9s_ease_forwards] font-black -translate-x-1/2 -translate-y-1/2 ${showPts.streak ? "text-5xl text-orange-400" : "text-4xl text-green-400"}`}
@@ -317,14 +310,13 @@ export function GameScreen({
         </div>
       )}
 
-      {/* Botão próximo */}
       {state.answered && isQuestion && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 animate-[pop_0.3s_ease]">
           <button
             onClick={onNextItem}
             className="min-w-[220px] rounded-full bg-gradient-to-r from-amber-500 to-amber-400 px-8 py-4 text-base font-black text-white shadow-[0_8px_28px_rgba(196,135,58,0.45)] transition-all hover:-translate-y-1 active:scale-95"
           >
-            {nextLabel}
+            {isLastItem ? "Ver resultado do módulo →" : "Próxima →"}
           </button>
         </div>
       )}

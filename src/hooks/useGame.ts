@@ -28,7 +28,6 @@ const makeInitial = (): GameState => ({
   ),
 });
 
-// ── Tipos do save ──────────────────────────────────────
 interface SavedData {
   playerName: string;
   topicIdx: number;
@@ -43,7 +42,7 @@ interface SavedData {
   partial: number;
   wrong: number;
   breakdown: { pts: number }[][][];
-  savedAt: string; // timestamp
+  savedAt: string;
 }
 
 function loadSaved(): SavedData | null {
@@ -51,39 +50,37 @@ function loadSaved(): SavedData | null {
   try {
     const raw = localStorage.getItem(SAVE_KEY);
     if (!raw) return null;
-    const data = JSON.parse(raw) as SavedData;
-    // Valida que o save tem os campos necessários
-    if (!data.playerName || data.topicIdx === undefined) return null;
-    return data;
+    const d = JSON.parse(raw) as SavedData;
+    if (!d.playerName || d.topicIdx === undefined) return null;
+    return d;
   } catch {
     return null;
   }
 }
 
 function writeSave(s: GameState) {
-  if (typeof window === "undefined") return;
-  if (!s.playerName) return; // não salva sem nome
+  if (typeof window === "undefined" || !s.playerName) return;
   try {
-    const data: SavedData = {
-      playerName: s.playerName,
-      topicIdx: s.topicIdx,
-      subIdx: s.subIdx,
-      itemIdx: s.itemIdx,
-      score: s.score,
-      lives: s.lives,
-      streak: s.streak,
-      maxStreak: s.maxStreak,
-      topicScores: s.topicScores,
-      correct: s.correct,
-      partial: s.partial,
-      wrong: s.wrong,
-      breakdown: s.breakdown,
-      savedAt: new Date().toISOString(),
-    };
-    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
-  } catch {
-    // localStorage cheio ou bloqueado — ignora silenciosamente
-  }
+    localStorage.setItem(
+      SAVE_KEY,
+      JSON.stringify({
+        playerName: s.playerName,
+        topicIdx: s.topicIdx,
+        subIdx: s.subIdx,
+        itemIdx: s.itemIdx,
+        score: s.score,
+        lives: s.lives,
+        streak: s.streak,
+        maxStreak: s.maxStreak,
+        topicScores: s.topicScores,
+        correct: s.correct,
+        partial: s.partial,
+        wrong: s.wrong,
+        breakdown: s.breakdown,
+        savedAt: new Date().toISOString(),
+      }),
+    );
+  } catch {}
 }
 
 function clearSave() {
@@ -93,7 +90,6 @@ function clearSave() {
   } catch {}
 }
 
-// ── Reducer ────────────────────────────────────────────
 type Action =
   | { type: "SET_SCREEN"; screen: Screen }
   | { type: "SET_NAME"; name: string }
@@ -127,8 +123,8 @@ function reducer(state: GameState, action: Action): GameState {
       const pts = isCorrect ? (state.streak >= 2 ? 150 : 100) : choice.points;
       const newStreak = isCorrect ? state.streak + 1 : 0;
       const newLives = isWrong ? Math.max(0, state.lives - 1) : state.lives;
-      const newTopicScores = [...state.topicScores];
-      newTopicScores[state.topicIdx] += pts;
+      const scores = [...state.topicScores];
+      scores[state.topicIdx] += pts;
       return {
         ...state,
         answered: true,
@@ -137,7 +133,7 @@ function reducer(state: GameState, action: Action): GameState {
         lives: newLives,
         streak: newStreak,
         maxStreak: Math.max(state.maxStreak, newStreak),
-        topicScores: newTopicScores,
+        topicScores: scores,
         correct: isCorrect ? state.correct + 1 : state.correct,
         partial: choice.type === "partial" ? state.partial + 1 : state.partial,
         wrong: isWrong ? state.wrong + 1 : state.wrong,
@@ -198,8 +194,7 @@ function reducer(state: GameState, action: Action): GameState {
   }
 }
 
-// ── Gera questões via API ─────────────────────────────
-async function generateQuestions(
+async function fetchQuestions(
   topicIdx: number,
   subIdx: number,
 ): Promise<ChoiceItem[]> {
@@ -220,21 +215,18 @@ async function generateQuestions(
   return data.questions;
 }
 
-// ── Hook principal ────────────────────────────────────
 export function useGame() {
   const [state, dispatch] = useReducer(reducer, undefined, makeInitial);
   const [savedGame, setSavedGame] = useState<SavedData | null>(null);
-  const [genQuestions, setGenQuestions] = useState<
-    Record<string, ChoiceItem[]>
-  >({});
+  const [genQ, setGenQ] = useState<Record<string, ChoiceItem[]>>({});
   const [loadingQ, setLoadingQ] = useState(false);
 
-  // Carrega save ao abrir o app
+  // Carrega save ao abrir
   useEffect(() => {
     setSavedGame(loadSaved());
   }, []);
 
-  // Salva automaticamente sempre que o estado relevante muda
+  // Auto-save
   useEffect(() => {
     if (state.screen === "welcome") return;
     if (state.screen === "final" || state.screen === "game-over") {
@@ -256,16 +248,15 @@ export function useGame() {
     state.wrong,
   ]);
 
-  // Gera questões ao entrar em nova subfase
+  // Gera questões ao entrar em subfase
   useEffect(() => {
     if (state.screen !== "phase-intro" && state.screen !== "game") return;
     const key = `${state.topicIdx}-${state.subIdx}`;
-    if (genQuestions[key]) return;
-
+    if (genQ[key]) return;
     setLoadingQ(true);
-    generateQuestions(state.topicIdx, state.subIdx)
-      .then((questions) => {
-        setGenQuestions((prev) => ({ ...prev, [key]: questions }));
+    fetchQuestions(state.topicIdx, state.subIdx)
+      .then((qs) => {
+        setGenQ((prev) => ({ ...prev, [key]: qs }));
         setLoadingQ(false);
       })
       .catch(() => setLoadingQ(false));
@@ -275,7 +266,7 @@ export function useGame() {
   const currentSub = currentTopic?.subPhases[state.subIdx] ?? null;
   const key = `${state.topicIdx}-${state.subIdx}`;
   const tip = currentSub?.items[0];
-  const questions = genQuestions[key] ?? [];
+  const questions = genQ[key] ?? [];
   const allItems = tip ? [tip, ...questions] : questions;
   const currentItem = allItems[state.itemIdx] ?? null;
   const totalItems = N * 3 * 4;
@@ -283,11 +274,11 @@ export function useGame() {
   const maxScore = N * 3 * 3 * 100;
 
   const getClass = useCallback(
-    (score: number) => {
-      const pct = score / maxScore;
-      if (pct >= 0.9) return { title: "Mestre da Comunicação", trophy: "🏆" };
-      if (pct >= 0.7) return { title: "Comunicador Assertivo", trophy: "🥇" };
-      if (pct >= 0.45)
+    (s: number) => {
+      const p = s / maxScore;
+      if (p >= 0.9) return { title: "Mestre da Comunicação", trophy: "🏆" };
+      if (p >= 0.7) return { title: "Comunicador Assertivo", trophy: "🥇" };
+      if (p >= 0.45)
         return { title: "Comunicador em Crescimento", trophy: "🥈" };
       return { title: "Aprendiz em Comunicação", trophy: "🌱" };
     },
@@ -297,7 +288,7 @@ export function useGame() {
   const startGame = useCallback((name: string) => {
     clearSave();
     setSavedGame(null);
-    setGenQuestions({});
+    setGenQ({});
     dispatch({ type: "RESTART" });
     dispatch({ type: "SET_NAME", name });
     dispatch({ type: "SET_SCREEN", screen: "phase-intro" });
@@ -306,7 +297,7 @@ export function useGame() {
   const continueGame = useCallback(() => {
     const saved = loadSaved();
     if (!saved) return;
-    setGenQuestions({}); // questões serão regeneradas
+    setGenQ({});
     dispatch({ type: "LOAD_SAVE", data: saved });
   }, []);
 
@@ -323,23 +314,25 @@ export function useGame() {
   const restart = useCallback(() => {
     clearSave();
     setSavedGame(null);
-    setGenQuestions({});
+    setGenQ({});
     dispatch({ type: "RESTART" });
   }, []);
 
-  const submitScore = useCallback(async () => {
-    return await saveScore(
-      {
-        player_name: state.playerName,
-        total_score: state.score,
-        phase_scores: state.topicScores,
-        correct_count: state.correct,
-        partial_count: state.partial,
-        wrong_count: state.wrong,
-      },
-      maxScore,
-    );
-  }, [state, maxScore]);
+  const submitScore = useCallback(
+    async () =>
+      saveScore(
+        {
+          player_name: state.playerName,
+          total_score: state.score,
+          phase_scores: state.topicScores,
+          correct_count: state.correct,
+          partial_count: state.partial,
+          wrong_count: state.wrong,
+        },
+        maxScore,
+      ),
+    [state, maxScore],
+  );
 
   return {
     state,
