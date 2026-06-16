@@ -19,7 +19,7 @@ export function PhaseIntro({ topic, sub, isNewTopic, onStart }: Props) {
             {topic.icon}
           </div>
           <p className="mb-1 text-xs font-bold uppercase tracking-[3px] text-white/35">
-            Topico {topic.number} de 8
+            Tópico {topic.number} de 8
           </p>
           <h2 className="mb-2 text-3xl font-black">{topic.title}</h2>
           <p className="mb-6 max-w-xs text-sm leading-relaxed text-white/55">
@@ -31,7 +31,7 @@ export function PhaseIntro({ topic, sub, isNewTopic, onStart }: Props) {
                 key={i}
                 className="rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-white/40"
               >
-                Modulo {i}
+                Módulo {i}
               </div>
             ))}
           </div>
@@ -50,7 +50,7 @@ export function PhaseIntro({ topic, sub, isNewTopic, onStart }: Props) {
 
       <div className="mb-6 rounded-2xl border border-white/10 bg-white/5 px-5 py-4 max-w-sm w-full">
         <p className="text-xs font-bold uppercase tracking-wider text-amber-500 mb-1">
-          Modulo {subNumber}
+          Módulo {subNumber}
         </p>
         <h3 className="text-lg font-black mb-2">{sub.title}</h3>
         <p className="text-sm text-white/55 leading-relaxed">
@@ -62,7 +62,7 @@ export function PhaseIntro({ topic, sub, isNewTopic, onStart }: Props) {
         onClick={onStart}
         className="rounded-full bg-emerald-700 px-12 py-3.5 text-base font-black text-white shadow-[0_6px_24px_rgba(27,94,59,0.5)] transition-all hover:-translate-y-1 hover:bg-emerald-600 active:scale-95"
       >
-        Comecar modulo
+        Começar módulo →
       </button>
     </div>
   );
