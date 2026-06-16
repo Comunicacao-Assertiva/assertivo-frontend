@@ -12,6 +12,8 @@ import { saveScore } from "@/lib/supabase";
 
 const N = PHASES_DATA.length;
 const SAVE_KEY = "assertivo_progresso";
+const RECHARGE_MS = 30 * 60 * 1000; // 30 minutos por vida
+const MAX_LIVES = 3;
 
 const makeInitial = (): GameState => ({
   screen: "welcome",
@@ -21,7 +23,7 @@ const makeInitial = (): GameState => ({
   subIdx: 0,
   itemIdx: 0,
   score: 0,
-  lives: 3,
+  lives: MAX_LIVES,
   streak: 0,
   maxStreak: 0,
   answered: false,
@@ -33,6 +35,7 @@ const makeInitial = (): GameState => ({
   breakdown: Array.from({ length: N }, () =>
     Array.from({ length: 3 }, () => []),
   ),
+  livesDepletedAt: null,
 });
 
 interface SavedData {
@@ -51,6 +54,24 @@ interface SavedData {
   wrong: number;
   breakdown: { pts: number }[][][];
   savedAt: string;
+  livesDepletedAt: number | null;
+}
+
+// Calcula vidas atuais levando em conta o recarregamento
+export function calcCurrentLives(saved: SavedData): number {
+  if (!saved.livesDepletedAt) return saved.lives;
+  if (saved.lives >= MAX_LIVES) return saved.lives;
+  const elapsed = Date.now() - saved.livesDepletedAt;
+  const recharged = Math.floor(elapsed / RECHARGE_MS);
+  return Math.min(MAX_LIVES, saved.lives + recharged);
+}
+
+// Tempo até a próxima vida em ms
+export function msToNextLife(saved: SavedData): number {
+  if (!saved.livesDepletedAt) return 0;
+  const elapsed = Date.now() - saved.livesDepletedAt;
+  const nextRecharge = RECHARGE_MS - (elapsed % RECHARGE_MS);
+  return nextRecharge;
 }
 
 function loadSaved(): SavedData | null {
@@ -87,7 +108,8 @@ function writeSave(s: GameState) {
         wrong: s.wrong,
         breakdown: s.breakdown,
         savedAt: new Date().toISOString(),
-      }),
+        livesDepletedAt: s.livesDepletedAt,
+      } as SavedData),
     );
   } catch {}
 }
@@ -138,7 +160,7 @@ const FALLBACK_QUESTIONS = (topicTitle: string): ChoiceItem[] => [
     type: "choice",
     tag: "🤝 Relação interpessoal",
     question:
-      "Você precisa dizer não para alguém próximo que pede um favor além do que consegue fazer. Como age?",
+      "Você precisa dizer não para alguém próximo que pede um favor além do que consegue. Como age?",
     choices: [
       {
         id: "a",
@@ -171,7 +193,7 @@ const FALLBACK_QUESTIONS = (topicTitle: string): ChoiceItem[] => [
     type: "choice",
     tag: "💡 Tomada de decisão",
     question:
-      "Uma decisão importante está sendo tomada em grupo e você discorda da direção. O que você faz?",
+      "Uma decisão importante está sendo tomada em grupo e você discorda da direção. O que faz?",
     choices: [
       {
         id: "a",
@@ -224,7 +246,7 @@ async function fetchQuestions(
     if (data.error || !data.questions?.length) throw new Error(data.error);
     return data.questions;
   } catch (err) {
-    console.warn("API de questões falhou, usando fallback:", err);
+    console.warn("API falhou, usando fallback:", err);
     return FALLBACK_QUESTIONS(topic.title);
   }
 }
@@ -236,7 +258,7 @@ type Action =
   | { type: "SELECT_CHOICE"; choice: Choice }
   | { type: "NEXT_ITEM" }
   | { type: "NEXT_SUB" }
-  | { type: "LOAD_SAVE"; data: SavedData }
+  | { type: "LOAD_SAVE"; data: SavedData; rechargedLives: number }
   | { type: "RESTART" };
 
 function reducer(state: GameState, action: Action): GameState {
@@ -252,6 +274,11 @@ function reducer(state: GameState, action: Action): GameState {
       return {
         ...makeInitial(),
         ...action.data,
+        lives: action.rechargedLives,
+        livesDepletedAt:
+          action.rechargedLives < MAX_LIVES
+            ? action.data.livesDepletedAt
+            : null,
         screen: "game",
         answered: false,
         selectedChoice: null,
@@ -267,6 +294,11 @@ function reducer(state: GameState, action: Action): GameState {
       const newLives = isWrong ? Math.max(0, state.lives - 1) : state.lives;
       const scores = [...state.topicScores];
       scores[state.topicIdx] += pts;
+
+      // Marca quando ficou sem vidas
+      const livesDepletedAt =
+        isWrong && newLives === 0 ? Date.now() : state.livesDepletedAt;
+
       return {
         ...state,
         answered: true,
@@ -284,10 +316,12 @@ function reducer(state: GameState, action: Action): GameState {
             ti === state.topicIdx && si === state.subIdx ? [...s, { pts }] : s,
           ),
         ),
+        livesDepletedAt,
       };
     }
 
     case "NEXT_ITEM": {
+      // Game over — mas salva a posição para continuar depois
       if (state.lives <= 0) return { ...state, screen: "game-over" };
       if (state.itemIdx >= 3)
         return {
@@ -346,13 +380,15 @@ export function useGame() {
     setSavedGame(loadSaved());
   }, []);
 
+  // Salva sempre que algo relevante muda — incluindo answered
   useEffect(() => {
     if (state.screen === "welcome") return;
-    if (state.screen === "final" || state.screen === "game-over") {
+    if (state.screen === "final") {
       clearSave();
       setSavedGame(null);
       return;
     }
+    // No game-over: salva com vidas=0 e timestamp para recarregar
     writeSave(state);
   }, [
     state.screen,
@@ -365,6 +401,7 @@ export function useGame() {
     state.correct,
     state.partial,
     state.wrong,
+    state.answered,
   ]);
 
   useEffect(() => {
@@ -424,8 +461,10 @@ export function useGame() {
   const continueGame = useCallback(() => {
     const saved = loadSaved();
     if (!saved) return;
+    const rechargedLives = calcCurrentLives(saved);
     setGenQ({});
-    dispatch({ type: "LOAD_SAVE", data: saved });
+    dispatch({ type: "LOAD_SAVE", data: saved, rechargedLives });
+    setSavedGame(null);
   }, []);
 
   const goToGame = useCallback(
@@ -481,5 +520,7 @@ export function useGame() {
     nextSub,
     restart,
     submitScore,
+    RECHARGE_MS,
+    MAX_LIVES,
   };
 }

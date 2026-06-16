@@ -40,7 +40,6 @@ export function GameWrapper() {
         @keyframes pulse2{0%,100%{opacity:1}50%{opacity:.4}}
       `}</style>
 
-      {/* Welcome */}
       {state.screen === "welcome" && (
         <WelcomeScreen
           onStart={startGame}
@@ -49,7 +48,6 @@ export function GameWrapper() {
         />
       )}
 
-      {/* Loading de questões */}
       {(state.screen === "phase-intro" || state.screen === "game") &&
         loadingQ && (
           <div className="flex min-h-screen flex-col items-center justify-center px-5 text-center">
@@ -77,7 +75,6 @@ export function GameWrapper() {
           </div>
         )}
 
-      {/* Phase intro */}
       {state.screen === "phase-intro" &&
         !loadingQ &&
         currentTopic &&
@@ -90,7 +87,6 @@ export function GameWrapper() {
           />
         )}
 
-      {/* Game */}
       {state.screen === "game" &&
         !loadingQ &&
         currentTopic &&
@@ -108,7 +104,6 @@ export function GameWrapper() {
           />
         )}
 
-      {/* Sub result */}
       {state.screen === "sub-result" && currentTopic && currentSub && (
         <PhaseResult
           topic={currentTopic}
@@ -119,12 +114,15 @@ export function GameWrapper() {
         />
       )}
 
-      {/* Game over */}
       {state.screen === "game-over" && (
-        <GameOver state={state} maxScore={maxScore} onRestart={restart} />
+        <GameOver
+          state={state}
+          maxScore={maxScore}
+          onRestart={restart}
+          onContinue={continueGame}
+        />
       )}
 
-      {/* Final */}
       {(state.screen === "final" || state.screen === "leaderboard") && (
         <FinalResult
           state={state}

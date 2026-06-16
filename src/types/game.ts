@@ -16,7 +16,6 @@ export interface Choice {
   type: ChoiceType;
   feedback: string;
 }
-
 export interface TipItem {
   id: string;
   type: "tip";
@@ -24,7 +23,6 @@ export interface TipItem {
   title: string;
   content: string;
 }
-
 export interface ChoiceItem {
   id: string;
   type: "choice";
@@ -32,7 +30,6 @@ export interface ChoiceItem {
   question: string;
   choices: Choice[];
 }
-
 export type SubItem = TipItem | ChoiceItem;
 
 export interface SubPhase {
@@ -41,7 +38,6 @@ export interface SubPhase {
   description: string;
   items: SubItem[];
 }
-
 export interface Topic {
   id: number;
   number: number;
@@ -50,7 +46,6 @@ export interface Topic {
   description: string;
   subPhases: SubPhase[];
 }
-
 export interface PhaseBreakdownEntry {
   pts: number;
 }
@@ -73,6 +68,7 @@ export interface GameState {
   partial: number;
   wrong: number;
   breakdown: PhaseBreakdownEntry[][][];
+  livesDepletedAt: number | null;
 }
 
 export interface ScoreSubmit {
@@ -83,7 +79,6 @@ export interface ScoreSubmit {
   partial_count: number;
   wrong_count: number;
 }
-
 export interface ScoreResponse {
   id: string;
   player_name: string;
