@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { PHASES_DATA } from "@/data/phases";
+import type { GameContext } from "@/types/game";
 
 interface SavedGame {
   playerName: string;
@@ -9,15 +10,17 @@ interface SavedGame {
   score: number;
   lives: number;
   savedAt?: string;
+  context?: GameContext;
 }
 interface Props {
-  onStart: (name: string) => void;
+  onStart: (name: string, context: GameContext) => void;
   onContinue: () => void;
   savedGame: SavedGame | null;
 }
 
 export function WelcomeScreen({ onStart, onContinue, savedGame }: Props) {
   const [name, setName] = useState("");
+  const [context, setContext] = useState<GameContext>("geral");
   const [showNew, setShowNew] = useState(false);
   const isValid = name.trim().length >= 3;
   const hasSave = !!savedGame;
@@ -103,9 +106,16 @@ export function WelcomeScreen({ onStart, onContinue, savedGame }: Props) {
                 <p className="text-[10px] text-white/30">{savedDate}</p>
               )}
             </div>
-            <p className="font-black text-white text-lg mb-3">
+            <p className="font-black text-white text-lg mb-1">
               {savedGame!.playerName}
             </p>
+            {savedGame!.context && (
+              <p className="text-xs text-white/40 mb-3">
+                {savedGame!.context === "igreja"
+                  ? "⛪ Contexto Igreja"
+                  : "🌍 Contexto Geral"}
+              </p>
+            )}
             <div className="grid grid-cols-3 gap-2 text-center">
               <div className="rounded-xl bg-white/10 py-2">
                 <p className="text-xs text-white/40 mb-0.5">Tópico</p>
@@ -173,19 +183,55 @@ export function WelcomeScreen({ onStart, onContinue, savedGame }: Props) {
             </button>
           )}
 
+          {/* Seleção de contexto */}
+          <p className="text-sm font-bold text-white/60 mb-3">
+            Escolha o contexto das perguntas:
+          </p>
+          <div className="grid grid-cols-2 gap-3 mb-5">
+            <button
+              onClick={() => setContext("geral")}
+              className={`rounded-2xl border p-4 text-center transition-all ${
+                context === "geral"
+                  ? "border-amber-500 bg-amber-500/20"
+                  : "border-white/15 bg-white/5 hover:border-white/30"
+              }`}
+            >
+              <div className="text-3xl mb-2">🌍</div>
+              <p className="font-black text-sm text-white">Geral</p>
+              <p className="text-[11px] text-white/45 mt-1">
+                Trabalho, família, amigos, cotidiano
+              </p>
+            </button>
+
+            <button
+              onClick={() => setContext("igreja")}
+              className={`rounded-2xl border p-4 text-center transition-all ${
+                context === "igreja"
+                  ? "border-amber-500 bg-amber-500/20"
+                  : "border-white/15 bg-white/5 hover:border-white/30"
+              }`}
+            >
+              <div className="text-3xl mb-2">⛪</div>
+              <p className="font-black text-sm text-white">Igreja</p>
+              <p className="text-[11px] text-white/45 mt-1">
+                Situações do contexto eclesiástico
+              </p>
+            </button>
+          </div>
+
           <input
             type="text"
             placeholder="Seu nome completo"
             value={name}
             onChange={(e) => setName(e.target.value)}
             onKeyDown={(e) =>
-              e.key === "Enter" && isValid && onStart(name.trim())
+              e.key === "Enter" && isValid && onStart(name.trim(), context)
             }
             className="mb-3 w-full rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-base text-white placeholder-white/30 outline-none focus:border-amber-500 focus:bg-white/15 transition"
           />
 
           <button
-            onClick={() => isValid && onStart(name.trim())}
+            onClick={() => isValid && onStart(name.trim(), context)}
             disabled={!isValid}
             className="w-full rounded-full bg-gradient-to-r from-amber-500 to-amber-400 py-4 text-lg font-black text-white shadow-[0_8px_32px_rgba(196,135,58,0.45)] transition-all hover:-translate-y-1 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none"
           >

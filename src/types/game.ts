@@ -1,4 +1,5 @@
 export type ChoiceType = "correct" | "partial" | "wrong";
+export type GameContext = "geral" | "igreja";
 export type Screen =
   | "welcome"
   | "phase-intro"
@@ -57,6 +58,7 @@ export interface PhaseBreakdownEntry {
 export interface GameState {
   screen: Screen;
   playerName: string;
+  context: GameContext;
   topicIdx: number;
   subIdx: number;
   itemIdx: number;

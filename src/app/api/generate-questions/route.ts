@@ -1,21 +1,52 @@
 import { NextRequest, NextResponse } from "next/server";
 
+const CONTEXTOS = {
+  igreja: `Contexto: situações do ambiente eclesiástico. Use cenários como:
+- Reuniões de liderança da igreja
+- Conversas entre pastor e membros
+- Conflitos no ministério de louvor
+- Decisões em células ou grupos pequenos
+- Voluntários e coordenadores de ministério
+- Comunicação entre diáconos e presbíteros
+- Situações com famílias da congregação
+- Planejamento de eventos da igreja`,
+
+  geral: `Contexto: situações do cotidiano geral. Use cenários variados como:
+- Casal em casa discutindo algo
+- Família no jantar
+- Amigos num grupo de WhatsApp
+- Médico e paciente na consulta
+- Cliente e atendente no comércio
+- Vizinhos com uma situação
+- Academia ou esporte em grupo
+- Redes sociais e mensagens digitais`,
+};
+
 export async function POST(req: NextRequest) {
-  const { topicTitle, subTitle, topicNumber, subNumber } = await req.json();
+  const {
+    topicTitle,
+    subTitle,
+    topicNumber,
+    subNumber,
+    context = "geral",
+  } = await req.json();
   const difficulty = (topicNumber - 1) * 3 + subNumber;
+  const contextoTexto =
+    CONTEXTOS[context as "geral" | "igreja"] ?? CONTEXTOS.geral;
 
   const prompt = `Você é um gerador de questões para um jogo educativo sobre comunicação em português brasileiro.
 
 Nível de dificuldade: ${difficulty}/24
 
-Gere EXATAMENTE 3 questões de múltipla escolha sobre situações reais do dia a dia.
+${contextoTexto}
+
+Gere EXATAMENTE 3 questões de múltipla escolha sobre situações reais.
 
 REGRAS:
-1. NUNCA mencione o tema, título ou assunto do módulo nas perguntas ou respostas.
-2. Escreva situações concretas e humanas, não teóricas.
-3. Cenários DIFERENTES nas 3 questões: casal, família, restaurante, médico, amigos, compras, vizinho, academia, redes sociais, viagem, trabalho, etc.
-4. As respostas devem ser comportamentos reais, não frases de manual.
-5. Quanto maior a dificuldade, mais sutil a diferença entre as opções.
+1. NUNCA mencione o tema ou título do módulo nas perguntas ou respostas.
+2. Cenários DIFERENTES nas 3 questões — use situações distintas.
+3. As respostas devem ser comportamentos reais, não frases de manual.
+4. Quanto maior a dificuldade, mais sutil a diferença entre as opções.
 
 Contexto interno (NÃO mencione nas perguntas): ${topicTitle} — ${subTitle}
 
@@ -24,7 +55,7 @@ Cada questão tem 3 opções:
 - Resposta RAZOÁVEL mas incompleta: points 50, type "partial"
 - Resposta INADEQUADA mas comum: points 0, type "wrong"
 
-Feedbacks: 1-2 frases diretas explicando o porquê, sem jargão técnico.
+Feedbacks: 1-2 frases diretas explicando o porquê, sem jargão.
 Varie qual opção (a, b ou c) é a correta nas 3 questões.
 
 Retorne APENAS JSON válido, sem markdown, sem texto antes ou depois:
