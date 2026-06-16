@@ -12,13 +12,13 @@ import { saveScore } from "@/lib/supabase";
 
 const N = PHASES_DATA.length;
 const SAVE_KEY = "assertivo_progresso";
-const RECHARGE_MS = 30 * 60 * 1000; // 30 minutos por vida
+const RECHARGE_MS = 30 * 60 * 1000;
 const MAX_LIVES = 3;
 
 const makeInitial = (): GameState => ({
   screen: "welcome",
   playerName: "",
-  context: "geral",
+  context: "igreja",
   topicIdx: 0,
   subIdx: 0,
   itemIdx: 0,
@@ -57,7 +57,6 @@ interface SavedData {
   livesDepletedAt: number | null;
 }
 
-// Calcula vidas atuais levando em conta o recarregamento
 export function calcCurrentLives(saved: SavedData): number {
   if (!saved.livesDepletedAt) return saved.lives;
   if (saved.lives >= MAX_LIVES) return saved.lives;
@@ -66,12 +65,10 @@ export function calcCurrentLives(saved: SavedData): number {
   return Math.min(MAX_LIVES, saved.lives + recharged);
 }
 
-// Tempo até a próxima vida em ms
 export function msToNextLife(saved: SavedData): number {
   if (!saved.livesDepletedAt) return 0;
   const elapsed = Date.now() - saved.livesDepletedAt;
-  const nextRecharge = RECHARGE_MS - (elapsed % RECHARGE_MS);
-  return nextRecharge;
+  return RECHARGE_MS - (elapsed % RECHARGE_MS);
 }
 
 function loadSaved(): SavedData | null {
@@ -125,98 +122,99 @@ const FALLBACK_QUESTIONS = (topicTitle: string): ChoiceItem[] => [
   {
     id: `fb-1-${topicTitle}`,
     type: "choice",
-    tag: "💬 Situação do dia a dia",
+    tag: "⛪ Situação na igreja",
     question:
-      "Alguém te faz uma crítica inesperada em público. O que você faz?",
+      "Durante uma reunião de liderança, alguém faz uma crítica ao seu trabalho na frente de todos. O que você faz?",
     choices: [
       {
         id: "a",
-        text: "Rebate imediatamente sem ouvir completamente.",
+        text: "Rebate imediatamente para defender sua posição.",
         points: 0,
         type: "wrong",
         feedback:
-          "Reagir sem ouvir raramente resolve. A defensividade fecha o diálogo.",
+          "Reagir defensivamente em público escalona o conflito e prejudica o ambiente.",
       },
       {
         id: "b",
-        text: "Ouve com atenção, agradece e pede exemplos concretos.",
+        text: "Ouve com atenção, agradece e pede uma conversa em particular depois.",
         points: 100,
         type: "correct",
         feedback:
-          "Abertura genuína antes de contestar. Você aprende mais e responde melhor.",
+          "Maturidade e sabedoria. Você acolheu o feedback e escolheu o espaço certo para aprofundar.",
       },
       {
         id: "c",
-        text: "Concorda com tudo para evitar conflito.",
+        text: "Fica quieto e engole o comentário sem dizer nada.",
         points: 25,
         type: "partial",
         feedback:
-          "Evitar o conflito tem um custo: você não processa nem resolve nada de verdade.",
+          "Evitar o conflito no momento pode ser necessário, mas o silêncio total não resolve a situação.",
       },
     ],
   },
   {
     id: `fb-2-${topicTitle}`,
     type: "choice",
-    tag: "🤝 Relação interpessoal",
+    tag: "🙏 Conflito no ministério",
     question:
-      "Você precisa dizer não para alguém próximo que pede um favor além do que consegue. Como age?",
+      "Dois membros do ministério de louvor estão em conflito e pedem que você tome partido. O que você faz?",
     choices: [
       {
         id: "a",
-        text: "Aceita mesmo sem querer para não decepcionar.",
+        text: "Toma partido de quem parece ter mais razão.",
         points: 0,
         type: "wrong",
         feedback:
-          "Aceitar contra sua vontade gera ressentimento e prejudica o relacionamento.",
+          "Tomar partido sem ouvir os dois lados é injusto e pode dividir o grupo.",
       },
       {
         id: "b",
-        text: "Recusa com clareza, explica o motivo e oferece uma alternativa.",
+        text: "Ouve cada um separadamente e facilita um diálogo entre os dois.",
         points: 100,
         type: "correct",
         feedback:
-          "Direto, respeitoso e construtivo. Isso é assertividade na prática.",
+          "Mediação justa: ouvir todos antes de agir. Isso constrói confiança e resolve o problema na raiz.",
       },
       {
         id: "c",
-        text: "Inventa uma desculpa para evitar a conversa direta.",
-        points: 25,
-        type: "partial",
+        text: "Diz que não é problema seu e se afasta da situação.",
+        points: 0,
+        type: "wrong",
         feedback:
-          "Resolve o momento mas cria um padrão de desonestidade na relação.",
+          "Omissão em conflito que afeta o ministério é falha de responsabilidade.",
       },
     ],
   },
   {
     id: `fb-3-${topicTitle}`,
     type: "choice",
-    tag: "💡 Tomada de decisão",
+    tag: "📋 Decisão na liderança",
     question:
-      "Uma decisão importante está sendo tomada em grupo e você discorda da direção. O que faz?",
+      "O pastor toma uma decisão com a qual você discorda. O que você faz?",
     choices: [
       {
         id: "a",
-        text: "Fica quieto para não ser o único discordante.",
+        text: "Fala da discordância para outros membros da igreja.",
         points: 0,
         type: "wrong",
         feedback:
-          "Silenciar sua perspectiva válida priva o grupo de informação importante.",
+          "Falar pelas costas é triangulação — não resolve e pode dividir a congregação.",
       },
       {
         id: "b",
-        text: 'Pede espaço: "Tenho uma perspectiva diferente — posso compartilhar?"',
+        text: "Pede uma conversa privada para compartilhar sua perspectiva com respeito.",
         points: 100,
         type: "correct",
         feedback:
-          "Você contribui sem impor e cria diálogo real. Assertividade que serve ao grupo.",
+          "Comunicação direta e respeitosa com quem decidiu. Isso é maturidade e honestidade.",
       },
       {
         id: "c",
-        text: "Concorda na reunião mas reclama depois para outros.",
-        points: 0,
-        type: "wrong",
-        feedback: "Triangulação não resolve e cria ambiente de desconfiança.",
+        text: "Aceita em silêncio mesmo discordando.",
+        points: 25,
+        type: "partial",
+        feedback:
+          "Submissão tem valor, mas silenciar uma perspectiva útil pode privar a liderança de informação importante.",
       },
     ],
   },
@@ -294,11 +292,8 @@ function reducer(state: GameState, action: Action): GameState {
       const newLives = isWrong ? Math.max(0, state.lives - 1) : state.lives;
       const scores = [...state.topicScores];
       scores[state.topicIdx] += pts;
-
-      // Marca quando ficou sem vidas
       const livesDepletedAt =
         isWrong && newLives === 0 ? Date.now() : state.livesDepletedAt;
-
       return {
         ...state,
         answered: true,
@@ -321,7 +316,6 @@ function reducer(state: GameState, action: Action): GameState {
     }
 
     case "NEXT_ITEM": {
-      // Game over — mas salva a posição para continuar depois
       if (state.lives <= 0) return { ...state, screen: "game-over" };
       if (state.itemIdx >= 3)
         return {
@@ -380,7 +374,6 @@ export function useGame() {
     setSavedGame(loadSaved());
   }, []);
 
-  // Salva sempre que algo relevante muda — incluindo answered
   useEffect(() => {
     if (state.screen === "welcome") return;
     if (state.screen === "final") {
@@ -388,7 +381,6 @@ export function useGame() {
       setSavedGame(null);
       return;
     }
-    // No game-over: salva com vidas=0 e timestamp para recarregar
     writeSave(state);
   }, [
     state.screen,
@@ -467,6 +459,10 @@ export function useGame() {
     setSavedGame(null);
   }, []);
 
+  const goHome = useCallback(
+    () => dispatch({ type: "SET_SCREEN", screen: "welcome" }),
+    [],
+  );
   const goToGame = useCallback(
     () => dispatch({ type: "SET_SCREEN", screen: "game" }),
     [],
@@ -514,13 +510,12 @@ export function useGame() {
     finalClassification: getClass(state.score),
     startGame,
     continueGame,
+    goHome,
     goToGame,
     selectChoice,
     nextItem,
     nextSub,
     restart,
     submitScore,
-    RECHARGE_MS,
-    MAX_LIVES,
   };
 }

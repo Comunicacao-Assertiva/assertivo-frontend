@@ -21,6 +21,7 @@ export function GameWrapper() {
     finalClassification,
     startGame,
     continueGame,
+    goHome,
     goToGame,
     selectChoice,
     nextItem,
@@ -118,8 +119,8 @@ export function GameWrapper() {
         <GameOver
           state={state}
           maxScore={maxScore}
-          onRestart={restart}
           onContinue={continueGame}
+          onGoHome={goHome}
         />
       )}
 
