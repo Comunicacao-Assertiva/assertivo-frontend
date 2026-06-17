@@ -71,7 +71,7 @@ export function GameWrapper() {
                 className="h-4 w-4 rounded-full border-2 border-amber-400 border-t-transparent"
                 style={{ animation: "spin 0.8s linear infinite" }}
               />
-              Gerando questões com IA...
+              Preparando próxima fase...
             </div>
           </div>
         )}
