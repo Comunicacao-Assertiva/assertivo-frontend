@@ -69,7 +69,7 @@ function TipCard({
   );
 }
 
-const LETTERS = ["A", "B", "C"] as const;
+const LETTERS = ["A", "B", "C", "D"] as const;
 
 function ChoiceQuestion({
   item,
@@ -85,7 +85,8 @@ function ChoiceQuestion({
   const onStreak = state.streak >= 2;
 
   useEffect(() => {
-    setShuffled([...item.choices].sort(() => Math.random() - 0.5));
+    // O servidor já embaralha — aqui só garante novo array de referência por questão
+    setShuffled([...item.choices]);
   }, [item.id]);
 
   const btnStyle = (c: Choice) => {
@@ -131,7 +132,7 @@ function ChoiceQuestion({
             <span
               className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-black transition-all ${badgeStyle(c)}`}
             >
-              {LETTERS[i]}
+              {LETTERS[i] ?? i + 1}
             </span>
             <span className="leading-snug">{c.text}</span>
           </button>
@@ -220,7 +221,6 @@ export function GameScreen({
 
   return (
     <div className="flex min-h-screen flex-col pb-32">
-      {/* HUD */}
       <div className="sticky top-0 z-50 border-b border-white/10 bg-black/50 backdrop-blur">
         <div className="flex items-center justify-between px-5 py-2.5">
           <div className="flex gap-1">

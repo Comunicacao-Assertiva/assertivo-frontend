@@ -118,107 +118,150 @@ function clearSave() {
   } catch {}
 }
 
-const FALLBACK_QUESTIONS = (topicTitle: string): ChoiceItem[] => [
-  {
-    id: `fb-1-${topicTitle}`,
-    type: "choice",
-    tag: "⛪ Situação na igreja",
-    question:
-      "Durante uma reunião de liderança, alguém faz uma crítica ao seu trabalho na frente de todos. O que você faz?",
-    choices: [
-      {
-        id: "a",
-        text: "Rebate imediatamente para defender sua posição.",
-        points: 0,
-        type: "wrong",
-        feedback:
-          "Reagir defensivamente em público escalona o conflito e prejudica o ambiente.",
-      },
-      {
-        id: "b",
-        text: "Ouve com atenção, agradece e pede uma conversa em particular depois.",
-        points: 100,
-        type: "correct",
-        feedback:
-          "Maturidade e sabedoria. Você acolheu o feedback e escolheu o espaço certo para aprofundar.",
-      },
-      {
-        id: "c",
-        text: "Fica quieto e engole o comentário sem dizer nada.",
-        points: 25,
-        type: "partial",
-        feedback:
-          "Evitar o conflito no momento pode ser necessário, mas o silêncio total não resolve a situação.",
-      },
-    ],
-  },
-  {
-    id: `fb-2-${topicTitle}`,
-    type: "choice",
-    tag: "🙏 Conflito no ministério",
-    question:
-      "Dois membros do ministério de louvor estão em conflito e pedem que você tome partido. O que você faz?",
-    choices: [
-      {
-        id: "a",
-        text: "Toma partido de quem parece ter mais razão.",
-        points: 0,
-        type: "wrong",
-        feedback:
-          "Tomar partido sem ouvir os dois lados é injusto e pode dividir o grupo.",
-      },
-      {
-        id: "b",
-        text: "Ouve cada um separadamente e facilita um diálogo entre os dois.",
-        points: 100,
-        type: "correct",
-        feedback:
-          "Mediação justa: ouvir todos antes de agir. Isso constrói confiança e resolve o problema na raiz.",
-      },
-      {
-        id: "c",
-        text: "Diz que não é problema seu e se afasta da situação.",
-        points: 0,
-        type: "wrong",
-        feedback:
-          "Omissão em conflito que afeta o ministério é falha de responsabilidade.",
-      },
-    ],
-  },
-  {
-    id: `fb-3-${topicTitle}`,
-    type: "choice",
-    tag: "📋 Decisão na liderança",
-    question:
-      "O pastor toma uma decisão com a qual você discorda. O que você faz?",
-    choices: [
-      {
-        id: "a",
-        text: "Fala da discordância para outros membros da igreja.",
-        points: 0,
-        type: "wrong",
-        feedback:
-          "Falar pelas costas é triangulação — não resolve e pode dividir a congregação.",
-      },
-      {
-        id: "b",
-        text: "Pede uma conversa privada para compartilhar sua perspectiva com respeito.",
-        points: 100,
-        type: "correct",
-        feedback:
-          "Comunicação direta e respeitosa com quem decidiu. Isso é maturidade e honestidade.",
-      },
-      {
-        id: "c",
-        text: "Aceita em silêncio mesmo discordando.",
-        points: 25,
-        type: "partial",
-        feedback:
-          "Submissão tem valor, mas silenciar uma perspectiva útil pode privar a liderança de informação importante.",
-      },
-    ],
-  },
-];
+function shuffleArray<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+const FALLBACK_QUESTIONS = (topicTitle: string): ChoiceItem[] => {
+  const raw: ChoiceItem[] = [
+    {
+      id: `fb-1-${topicTitle}`,
+      type: "choice",
+      tag: "⛪ Situação na igreja",
+      question:
+        "Durante uma reunião de liderança, alguém faz uma crítica ao seu trabalho na frente de todos. O que você faz?",
+      choices: [
+        {
+          id: "a",
+          text: "Rebate imediatamente para defender sua posição.",
+          points: 0,
+          type: "wrong",
+          feedback:
+            "Reagir defensivamente em público escalona o conflito e prejudica o ambiente.",
+        },
+        {
+          id: "b",
+          text: "Ouve com atenção, agradece e pede uma conversa em particular depois.",
+          points: 100,
+          type: "correct",
+          feedback:
+            "Maturidade e sabedoria. Você acolheu o feedback e escolheu o espaço certo para aprofundar.",
+        },
+        {
+          id: "c",
+          text: "Fica quieto e engole o comentário sem dizer nada.",
+          points: 50,
+          type: "partial",
+          feedback:
+            "Evitar o conflito no momento pode ser necessário, mas o silêncio total não resolve a situação.",
+        },
+        {
+          id: "d",
+          text: "Critica de volta a pessoa na frente de todos para se defender.",
+          points: 0,
+          type: "wrong",
+          feedback:
+            "Responder ataque com ataque transforma um desconforto em um conflito público maior.",
+        },
+      ],
+    },
+    {
+      id: `fb-2-${topicTitle}`,
+      type: "choice",
+      tag: "🙏 Conflito no ministério",
+      question:
+        "Dois membros do ministério de louvor estão em conflito e pedem que você tome partido. O que você faz?",
+      choices: [
+        {
+          id: "a",
+          text: "Toma partido de quem parece ter mais razão.",
+          points: 0,
+          type: "wrong",
+          feedback:
+            "Tomar partido sem ouvir os dois lados é injusto e pode dividir o grupo.",
+        },
+        {
+          id: "b",
+          text: "Ouve cada um separadamente e facilita um diálogo entre os dois.",
+          points: 100,
+          type: "correct",
+          feedback:
+            "Mediação justa: ouvir todos antes de agir. Isso constrói confiança e resolve o problema na raiz.",
+        },
+        {
+          id: "c",
+          text: "Diz que não é problema seu e se afasta da situação.",
+          points: 0,
+          type: "wrong",
+          feedback:
+            "Omissão em conflito que afeta o ministério é falha de responsabilidade.",
+        },
+        {
+          id: "d",
+          text: "Pede que cada um escreva sua versão e decide sozinho sem conversar com eles.",
+          points: 50,
+          type: "partial",
+          feedback:
+            "Buscar entender os fatos é positivo, mas decidir sem diálogo direto perde a chance de reconciliação real.",
+        },
+      ],
+    },
+    {
+      id: `fb-3-${topicTitle}`,
+      type: "choice",
+      tag: "📋 Decisão na liderança",
+      question:
+        "O pastor toma uma decisão com a qual você discorda. O que você faz?",
+      choices: [
+        {
+          id: "a",
+          text: "Fala da discordância para outros membros da igreja.",
+          points: 0,
+          type: "wrong",
+          feedback:
+            "Falar pelas costas é triangulação — não resolve e pode dividir a congregação.",
+        },
+        {
+          id: "b",
+          text: "Pede uma conversa privada para compartilhar sua perspectiva com respeito.",
+          points: 100,
+          type: "correct",
+          feedback:
+            "Comunicação direta e respeitosa com quem decidiu. Isso é maturidade e honestidade.",
+        },
+        {
+          id: "c",
+          text: "Aceita em silêncio mesmo discordando.",
+          points: 50,
+          type: "partial",
+          feedback:
+            "Submissão tem valor, mas silenciar uma perspectiva útil pode privar a liderança de informação importante.",
+        },
+        {
+          id: "d",
+          text: "Posta uma indireta nas redes sociais sobre a situação.",
+          points: 0,
+          type: "wrong",
+          feedback:
+            "Expor discordâncias internas publicamente prejudica a igreja e quebra a confiança da liderança.",
+        },
+      ],
+    },
+  ];
+  // Embaralha também o fallback para não ter padrão fixo
+  return raw.map((q) => ({
+    ...q,
+    choices: shuffleArray(q.choices).map((c, i) => ({
+      ...c,
+      id: ["a", "b", "c", "d"][i],
+    })),
+  }));
+};
 
 async function fetchQuestions(
   topicIdx: number,

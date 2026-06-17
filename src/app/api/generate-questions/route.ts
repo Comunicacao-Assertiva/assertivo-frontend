@@ -9,6 +9,8 @@ function shuffleArray<T>(arr: T[]): T[] {
   return a;
 }
 
+const LETTERS = ["a", "b", "c", "d"];
+
 const CONTEXTOS = {
   igreja: `Contexto: situações do ambiente eclesiástico. Use cenários como:
 - Reuniões de liderança da igreja
@@ -60,10 +62,10 @@ REGRAS:
 
 Contexto interno (NÃO mencione nas perguntas): ${topicTitle} — ${subTitle}
 
-Cada questão tem 3 opções:
-- Resposta IDEAL: points 100, type "correct"
-- Resposta RAZOÁVEL mas incompleta: points 50, type "partial"
-- Resposta INADEQUADA mas comum: points 0, type "wrong"
+Cada questão tem EXATAMENTE 4 opções:
+- Resposta IDEAL: points 100, type "correct" (apenas UMA)
+- Resposta RAZOÁVEL mas incompleta: points 50, type "partial" (apenas UMA)
+- Duas respostas INADEQUADAS mas comuns: points 0, type "wrong" (DUAS, com motivos diferentes de estarem erradas)
 
 Feedbacks: 1-2 frases diretas explicando o porquê, sem jargão.
 
@@ -77,7 +79,8 @@ Retorne APENAS JSON válido, sem markdown, sem texto antes ou depois:
     "choices": [
       {"id":"a","text":"comportamento real","points":0,"type":"wrong","feedback":"explicação"},
       {"id":"b","text":"comportamento real","points":100,"type":"correct","feedback":"explicação"},
-      {"id":"c","text":"comportamento real","points":50,"type":"partial","feedback":"explicação"}
+      {"id":"c","text":"comportamento real","points":50,"type":"partial","feedback":"explicação"},
+      {"id":"d","text":"comportamento real","points":0,"type":"wrong","feedback":"explicação"}
     ]
   },
   { "id": "g2", "type": "choice", "tag": "...", "question": "...", "choices": [] },
@@ -94,7 +97,7 @@ Retorne APENAS JSON válido, sem markdown, sem texto antes ou depois:
       },
       body: JSON.stringify({
         model: "claude-haiku-4-5-20251001",
-        max_tokens: 2000,
+        max_tokens: 2200,
         messages: [{ role: "user", content: prompt }],
       }),
     });
@@ -108,10 +111,10 @@ Retorne APENAS JSON válido, sem markdown, sem texto antes ou depois:
     // Embaralha as opções de cada questão no servidor — garante aleatoriedade real
     const shuffledQuestions = questions.map((q: any, qi: number) => ({
       ...q,
-      id: `g${qi}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, // id único sempre
+      id: `g${qi}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       choices: shuffleArray(q.choices).map((c: any, ci: number) => ({
         ...c,
-        id: ["a", "b", "c"][ci], // reatribui as letras após embaralhar
+        id: LETTERS[ci] ?? `opt${ci}`,
       })),
     }));
 
