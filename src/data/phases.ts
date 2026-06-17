@@ -15,14 +15,16 @@ export const PHASES_DATA: Topic[] = [
           "Mensagens mal escritas causam mais conflitos do que desacordos reais.",
         items: [
           {
-            id:'1-1', title:'Clareza no Texto',
-             description:'Mensagens mal escritas causam mais conflitos do que desacordos reais.',
-            items:[{
-                 id:'1-1-tip', type:'tip', icon:'✏️',
-                title:'Releia antes de enviar',
-                content:'Uma mensagem mal escrita pode ser interpretada de 3 formas diferentes — e nenhuma delas é a que você pretendia.\n\nAntes de enviar algo importante, releia em voz baixa e pergunte:\n\n"Quem vai ler isso entenderia exatamente o que eu quis dizer, sem precisar me perguntar nada depois?"\n\nSe a resposta for não, reescreva.',
-  }],
-},
+            id: "1-1-tip",
+            type: "tip",
+            icon: "✏️",
+            title: "Releia antes de enviar",
+            content:
+              'Uma mensagem mal escrita pode ser interpretada de 3 formas diferentes — e nenhuma delas é a que você pretendia.\n\nAntes de enviar algo importante, releia em voz baixa e pergunte:\n\n"Quem vai ler isso entenderia exatamente o que eu quis dizer, sem precisar me perguntar nada depois?"\n\nSe a resposta for não, reescreva.',
+          },
+        ],
+      },
+      {
         id: "1-2",
         title: "Clareza Verbal",
         description: "Como você fala importa tanto quanto o que você fala.",
